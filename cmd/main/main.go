@@ -3,16 +3,16 @@ package main
 // <---------------------------------------------------------------------------------------------------->
 
 import (
-	"fmt"
+	"github.com/zmb3/spotify/v2"
 
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/pkg/setup"
 )
 
 // <---------------------------------------------------------------------------------------------------->
 
+var Client *spotify.Client = nil
+var User *spotify.PrivateUser = nil
+
 func main() {
-
-	id, secret, redirectURL := setup.GetEnvs()
-
-	fmt.Println(id, secret, redirectURL)
+	Client, User = setup.Setup()
 }
