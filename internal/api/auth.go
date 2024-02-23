@@ -98,7 +98,7 @@ func exchangeToken(authCode string) (Token, error) {
         "Content-Type" : "application/x-www-form-urlencoded",
     }
 
-	responseMap, err := util.MakePostRequest("https://accounts.spotify.com/api/token", parameters, headers)
+	responseMap, err := util.MakePOSTRequest("https://accounts.spotify.com/api/token", parameters, headers)
     if err != nil {
         return Token{}, err
     }

@@ -45,7 +45,7 @@ func GenerateRandomString(length int) string {
 }
 
 
-func MakePostRequest(requestURL string, parameters map[string]string, headers map[string]string) (map[string]interface{}, error) {
+func MakePOSTRequest(requestURL string, parameters map[string]string, headers map[string]string) (map[string]interface{}, error) {
     httpClient := &http.Client{}
 	postBody := url.Values{}
 
