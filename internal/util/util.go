@@ -64,7 +64,7 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
 
     response, err := httpClient.Do(request)
     if err != nil {
-        return map[string]interface{}{}, errors.New("Couldn't request POST request: " + err.Error())
+        return map[string]interface{}{}, errors.New("Couldn't receive POST request response: " + err.Error())
     }
     defer response.Body.Close()
 
@@ -77,8 +77,39 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
 
     err = json.Unmarshal(responseBody, &responseMap)
     if err != nil {
-        return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON POST request response: " + err.Error())
+        return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON POST request response body: " + err.Error())
     }
+
+	return responseMap, nil
+}
+
+func MakeGETRequest(requestURL string, accessToken string) (map[string]interface{}, error) {
+	httpClient := &http.Client{}
+
+	request, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		return map[string]interface{}{}, errors.New("Couldn't create GET request: " + err.Error())
+	}
+
+	request.Header.Set("Authorization", "Bearer " + accessToken)
+
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return map[string]interface{}{}, errors.New("Couldn't receive GET request response: " + err.Error())
+	}
+	defer response.Body.Close()
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return map[string]interface{}{}, errors.New("Couldn't read GET request response: " + err.Error())
+	}
+
+	var responseMap map[string]interface{}
+
+	err = json.Unmarshal(responseBody, &responseMap)
+	if err != nil {
+		return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON GET request response body: " + err.Error())
+	}
 
 	return responseMap, nil
 }
