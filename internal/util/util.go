@@ -8,8 +8,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,8 +26,7 @@ func LoadEnv() (string, string, string) {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		fmt.Println("Error loading .env file", err)
-		return "", "", ""
+		log.Fatal(err)
 	}
 
 	return os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"), os.Getenv("SPOTIFY_REDIRECT_URL")
@@ -38,7 +37,7 @@ func GenerateRandomString(length int) string {
 	bytes := make([]byte, length)
     _, err := rand.Read(bytes)
     if err != nil {
-       panic(err)
+       log.Fatal(err)
     }
 
     return base64.StdEncoding.EncodeToString(bytes)
@@ -75,10 +74,12 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
 
     var responseMap map[string]interface{}
 
-    err = json.Unmarshal(responseBody, &responseMap)
-    if err != nil {
-        return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON POST request response body: " + err.Error())
-    }
+	if (len(responseBody) > 0) {
+		err = json.Unmarshal(responseBody, &responseMap)
+		if err != nil {
+			return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON POST request response body: " + err.Error())
+		}
+	}
 
 	return responseMap, nil
 }
