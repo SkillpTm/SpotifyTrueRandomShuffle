@@ -31,6 +31,7 @@ func Start() {
 
 	userProfile, err := util.MakeGETRequest(userProfileURL, api.UserToken.GetAccessToken())
 	if err != nil {
+		util.LogError(err)
 		log.Fatal(err)
 	}
 
@@ -42,9 +43,16 @@ func Start() {
 
 		playbackResponse, err := util.MakeGETRequest(playbackStateURL, api.UserToken.GetAccessToken())
 		if err != nil {
+			util.LogError(err)
 			log.Fatal(err)
 		}
 
+		// check if there is a playback state
+		if (len(playbackResponse) == 0) {
+			continue
+		}
+
+		// check if the context exists (i.e. if the user is listening to a song outside of an album(playlist))
 		if (playbackResponse["context"] == nil) {
 			continue
 		}
@@ -66,6 +74,7 @@ func Start() {
 
 		queueResponse, err := util.MakeGETRequest(queueURL, api.UserToken.GetAccessToken())
 		if err != nil {
+			util.LogError(err)
 			log.Fatal(err)
 		}
 
@@ -76,6 +85,7 @@ func Start() {
 
 		contextResponse, err := util.MakeGETRequest(contextData.contextHREF, api.UserToken.GetAccessToken())
 		if err != nil {
+			util.LogError(err)
 			log.Fatal(err)
 		}
 
@@ -91,6 +101,7 @@ func Start() {
 
 		randomTrackResponse, err := util.MakeGETRequest(randomTrackURL, api.UserToken.GetAccessToken())
 		if err != nil {
+			util.LogError(err)
 			log.Fatal(err)
 		}
 
@@ -104,6 +115,7 @@ func Start() {
 
 		_, err = util.MakePOSTRequest(fmt.Sprintf("%s?uri=%s", addToQueueURL, randomTrackURI), map[string]string{}, map[string]string{"Authorization": "Bearer " + api.UserToken.GetAccessToken(),})
 		if err != nil {
+			util.LogError(err)
 			log.Fatal(err)
 		}
 
