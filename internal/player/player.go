@@ -6,18 +6,24 @@ package player
 
 
 type Player struct {
+	country string
+
 	isPlaying bool
+	isPrivateSession bool
 	currentlyPlayingType string
 	repeatState string
 	shuffleState bool
 	smartShuffle bool
 	contextType string
 	contextHREF string
+
+	lastQueueSongURI string
 }
 
 
 func (player *Player) RunChecks() bool {
 	if (!player.isPlaying || // check if the user is playing something right now
+		player.isPrivateSession || // check if the user is in a private session
 		player.currentlyPlayingType != "track" || // check if the user is listening to a track
 		player.repeatState == "track" || // check if the user has repeat turned on for this track
 		!player.shuffleState || // check if the player has turned on shuffle
