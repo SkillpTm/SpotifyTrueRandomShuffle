@@ -5,6 +5,7 @@ package api
 
 import (
 	"encoding/base64"
+	"log"
 	"time"
 
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/util"
@@ -26,7 +27,10 @@ func (token *Token) GetAccessToken() string {
 	currentTime := time.Now()
 
 	if (token.ExpirationTime.Before(currentTime)) {
-		token.refreshAccessToken(currentTime)
+		err := token.refreshAccessToken(currentTime)
+		if err != nil {
+        	log.Fatal(err)
+    	}
 	}
 
 	return token.AccessToken
@@ -49,8 +53,7 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
     }
 
 	token.AccessToken = responseMap["access_token"].(string)
-	token.ExpirationTime = currentTime.Add(time.Hour)
-	token.RefreshToken = responseMap["refresh_token"].(string)
+	token.ExpirationTime = time.Now().Add(time.Duration(responseMap["expires_in"].(int)) * time.Second)
 
 	return nil
 }
