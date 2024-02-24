@@ -21,7 +21,7 @@ const (
 	serverCallback = "/callback"
 
 	responseType = "code"
-	scopes = "user-read-playback-state%20user-read-currently-playing%20user-modify-playback-state"
+	scopes = `user-read-playback-state%20user-read-currently-playing%20user-modify-playback-state%20user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative`
 	authURL = "https://accounts.spotify.com/authorize?"
 )
 
@@ -50,7 +50,7 @@ func AuthUser() {
 func startHTTPServer() {
 	http.HandleFunc(serverCallback, handleAuthCode)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Got request for:", r.URL.String())
+		http.NotFound(w, r)
 	})
 	go func() {
 		err := http.ListenAndServe(serverPort, nil)
@@ -105,7 +105,7 @@ func exchangeToken(authCode string) (Token, error) {
 
 	return Token{
 		AccessToken: responseMap["access_token"].(string),
-		ExpirationTime: time.Now().Add(time.Hour),
+		ExpirationTime: time.Now().Add(time.Duration(responseMap["expires_in"].(int)) * time.Second),
 		RefreshToken: responseMap["refresh_token"].(string),
 	}, nil
 }
