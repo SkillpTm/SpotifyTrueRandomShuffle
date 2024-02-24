@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -30,7 +31,7 @@ func LogError(logErr error) {
 	}
 	defer logFile.Close()
 
-	fmt.Fprintf(logFile, "Error: %v\n", logErr)
+	fmt.Fprintf(logFile, "%v: %v\n", time.Now(), logErr)
 }
 
 
