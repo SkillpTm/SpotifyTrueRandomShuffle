@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -22,14 +23,25 @@ import (
 
 
 
-func LoadEnv() (string, string, string) {
-	err := godotenv.Load(".env")
-
+func LogError(logErr error) {
+	logFile, err := os.OpenFile("./logs/error.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer logFile.Close()
 
-	return os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"), os.Getenv("SPOTIFY_REDIRECT_URL")
+	fmt.Fprintf(logFile, "Error: %v\n", logErr)
+}
+
+
+func LoadEnv() (string, string, string) {
+	err := godotenv.Load(".env")
+	if err != nil {
+		LogError(err)
+		log.Fatal(err)
+	}
+
+	return os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"), os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
 }
 
 
@@ -37,7 +49,8 @@ func GenerateRandomString(length int) string {
 	bytes := make([]byte, length)
     _, err := rand.Read(bytes)
     if err != nil {
-       log.Fatal(err)
+		LogError(err)
+		log.Fatal(err)
     }
 
     return base64.StdEncoding.EncodeToString(bytes)
@@ -54,7 +67,7 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
 
     request, err := http.NewRequest("POST", requestURL, strings.NewReader(postBody.Encode()))
     if err != nil {
-        return map[string]interface{}{}, errors.New("Couldn't create POST request: " + err.Error())
+        return map[string]interface{}{}, errors.New("couldn't create POST request: " + err.Error())
     }
 
     for key, value := range headers {
@@ -63,13 +76,13 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
 
     response, err := httpClient.Do(request)
     if err != nil {
-        return map[string]interface{}{}, errors.New("Couldn't receive POST request response: " + err.Error())
+        return map[string]interface{}{}, errors.New("couldn't receive POST request response: " + err.Error())
     }
     defer response.Body.Close()
 
     responseBody, err := io.ReadAll(response.Body)
     if err != nil {
-        return map[string]interface{}{}, errors.New("Couldn't read POST request response: " + err.Error())
+        return map[string]interface{}{}, errors.New("couldn't read POST request response: " + err.Error())
     }
 
     var responseMap map[string]interface{}
@@ -77,7 +90,7 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
 	if (len(responseBody) > 0) {
 		err = json.Unmarshal(responseBody, &responseMap)
 		if err != nil {
-			return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON POST request response body: " + err.Error())
+			return map[string]interface{}{}, errors.New("couldn't unmarshal JSON POST request response body: " + err.Error())
 		}
 	}
 
@@ -89,27 +102,29 @@ func MakeGETRequest(requestURL string, accessToken string) (map[string]interface
 
 	request, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		return map[string]interface{}{}, errors.New("Couldn't create GET request: " + err.Error())
+		return map[string]interface{}{}, errors.New("couldn't create GET request: " + err.Error())
 	}
 
 	request.Header.Set("Authorization", "Bearer " + accessToken)
 
 	response, err := httpClient.Do(request)
 	if err != nil {
-		return map[string]interface{}{}, errors.New("Couldn't receive GET request response: " + err.Error())
+		return map[string]interface{}{}, errors.New("couldn't receive GET request response: " + err.Error())
 	}
 	defer response.Body.Close()
 
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return map[string]interface{}{}, errors.New("Couldn't read GET request response: " + err.Error())
+		return map[string]interface{}{}, errors.New("couldn't read GET request response: " + err.Error())
 	}
 
 	var responseMap map[string]interface{}
 
-	err = json.Unmarshal(responseBody, &responseMap)
-	if err != nil {
-		return map[string]interface{}{}, errors.New("Couldn't unmarshal JSON GET request response body: " + err.Error())
+	if (len(responseBody) > 0) {
+		err = json.Unmarshal(responseBody, &responseMap)
+		if err != nil {
+			return map[string]interface{}{}, errors.New("couldn't unmarshal JSON GET request response body: " + err.Error())
+		}
 	}
 
 	return responseMap, nil
