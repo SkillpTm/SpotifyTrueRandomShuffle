@@ -14,9 +14,9 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 type Token struct {
-	AccessToken string
-	ExpirationTime time.Time
-	RefreshToken string
+    AccessToken string
+    ExpirationTime time.Time
+    RefreshToken string
 }
 
 // <---------------------------------------------------------------------------------------------------->
@@ -24,17 +24,17 @@ type Token struct {
 
 
 func (token *Token) GetAccessToken() string {
-	currentTime := time.Now()
+    currentTime := time.Now()
 
-	if (token.ExpirationTime.Before(currentTime)) {
-		err := token.refreshAccessToken(currentTime)
-		if err != nil {
-        	util.LogError(err)
-			log.Fatal(err)
-    	}
-	}
+    if (token.ExpirationTime.Before(currentTime)) {
+        err := token.refreshAccessToken(currentTime)
+        if err != nil {
+            util.LogError(err)
+            log.Fatal(err)
+        }
+    }
 
-	return token.AccessToken
+    return token.AccessToken
 }
 
 
@@ -48,13 +48,13 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
         "Content-Type" : "application/x-www-form-urlencoded",
     }
 
-	responseMap, err := util.MakePOSTRequest("https://accounts.spotify.com/api/token", parameters, headers)
-	if err != nil {
+    responseMap, err := util.MakePOSTRequest("https://accounts.spotify.com/api/token", parameters, headers)
+    if err != nil {
         return err
     }
 
-	token.AccessToken = responseMap["access_token"].(string)
-	token.ExpirationTime = time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second)
+    token.AccessToken = responseMap["access_token"].(string)
+    token.ExpirationTime = time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second)
 
-	return nil
+    return nil
 }
