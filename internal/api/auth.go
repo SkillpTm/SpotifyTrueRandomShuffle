@@ -16,7 +16,6 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 const (
-	serverDomain = "http://localhost"
 	serverPort = ":8080"
 	serverCallback = "/callback"
 
@@ -25,10 +24,9 @@ const (
 	authURL = "https://accounts.spotify.com/authorize?"
 )
 
-const redirectURI = serverDomain + serverPort + serverCallback
-
 var (
-	clientID, clientSecret, _ = util.LoadEnv()
+	clientID, clientSecret, serverDomain = util.LoadEnv()
+	redirectURI = serverDomain + serverPort + serverCallback
 
 	state = util.GenerateRandomString(16)
 	tokenChannel = make(chan *Token)
@@ -55,6 +53,7 @@ func startHTTPServer() {
 	go func() {
 		err := http.ListenAndServe(serverPort, nil)
 		if err != nil {
+			util.LogError(err)
 			log.Fatal(err)
 		}
 	}()
@@ -73,12 +72,14 @@ func handleAuthCode(w http.ResponseWriter, r *http.Request) {
 
 	if (state != callbackState) {
 		http.NotFound(w, r)
-		log.Fatalf("State mismatch: %s != %s\n", state, callbackState)
+		util.LogError(fmt.Errorf("state mismatch: %s != %s", state, callbackState))
+		log.Fatalf("state mismatch: %s != %s\n", state, callbackState)
 	}
 
 	token, err := exchangeToken(query.Get("code"))
 	if err != nil {
-		http.Error(w, "Couldn't get token", http.StatusForbidden)
+		http.Error(w, "couldn't get token", http.StatusForbidden)
+		util.LogError(err)
 		log.Fatal(err)
 	}
 
@@ -105,7 +106,7 @@ func exchangeToken(authCode string) (Token, error) {
 
 	return Token{
 		AccessToken: responseMap["access_token"].(string),
-		ExpirationTime: time.Now().Add(time.Duration(responseMap["expires_in"].(int)) * time.Second),
+		ExpirationTime: time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second),
 		RefreshToken: responseMap["refresh_token"].(string),
 	}, nil
 }
