@@ -33,6 +33,7 @@ var (
 
 
 
+// AuthUser authorizes our access to the user by getting the access token from Spotify
 func AuthUser() {
     startHTTPServer()
     requestUserAuth()
@@ -41,6 +42,8 @@ func AuthUser() {
 }
 
 
+
+// startHTTPServer starts a server that listens and severs on a callback
 func startHTTPServer() {
     http.HandleFunc(util.AppConfig.CallbackPath, handleAuthCode)
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +53,20 @@ func startHTTPServer() {
         err := http.ListenAndServe(util.AppConfig.CallbackPort, nil)
         if err != nil {
             util.LogError(err)
-            log.Fatal(err)
         }
     }()
 }
 
 
+
+// requestUserAuth prints the link required for the user auth
 func requestUserAuth() {
-    fmt.Println("Please click this link and accept access: " + fmt.Sprintf("%sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, util.AppConfig.ClientID, responseType, redirectURI, state, scopes))
+    fmt.Printf("Please click this link and accept access: %sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, util.AppConfig.ClientID, responseType, redirectURI, state, scopes)
 }
 
 
+
+// handleAuthCode is a handler that handles the response from Spotify and puts a Token into the tokenChannel
 func handleAuthCode(w http.ResponseWriter, r *http.Request) {
 
     query := r.URL.Query()
@@ -84,6 +90,8 @@ func handleAuthCode(w http.ResponseWriter, r *http.Request) {
 }
 
 
+
+// exchangeToken uses the authcode from Spotify to return the AccessToken, ExpirationTime and RefreshToken
 func exchangeToken(authCode string) (Token, error) {
     parameters := map[string]string{
         "grant_type": "authorization_code",
