@@ -13,6 +13,7 @@ import (
 
 // <---------------------------------------------------------------------------------------------------->
 
+// Token is a type to hold our token data
 type Token struct {
     accessToken string
     expirationTime time.Time
@@ -23,9 +24,11 @@ type Token struct {
 
 
 
+// GetAccessToken is a getter for the access token that always ensures it's up to date
 func (token *Token) GetAccessToken() string {
     currentTime := time.Now()
 
+    // chech if the access token is still usable
     if (token.expirationTime.Before(currentTime)) {
         err := token.refreshAccessToken(currentTime)
         if err != nil {
@@ -38,6 +41,8 @@ func (token *Token) GetAccessToken() string {
 }
 
 
+
+// refreshAccessToken uses the refreshToken to exchange for a new accessToken
 func (token *Token) refreshAccessToken(currentTime time.Time) error {
     parameters := map[string]string{
         "grant_type": "refresh_token",
@@ -48,7 +53,7 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
         "Content-Type" : "application/x-www-form-urlencoded",
     }
 
-    responseMap, err := util.MakePOSTRequest("https://accounts.spotify.com/api/token", parameters, headers)
+    responseMap, err := util.MakePOSTRequest(tokenURL, parameters, headers)
     if err != nil {
         return err
     }
