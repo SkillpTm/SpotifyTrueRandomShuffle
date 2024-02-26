@@ -114,8 +114,8 @@ func exchangeToken(authCode string) (Token, error) {
     }
 
     return Token{
-        AccessToken: responseMap["access_token"].(string),
-        ExpirationTime: time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second),
-        RefreshToken: responseMap["refresh_token"].(string),
+        accessToken: responseMap["access_token"].(string),
+        expirationTime: time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second),
+        refreshToken: responseMap["refresh_token"].(string),
     }, nil
 }

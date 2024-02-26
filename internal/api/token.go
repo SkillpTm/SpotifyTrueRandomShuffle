@@ -14,9 +14,9 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 type Token struct {
-    AccessToken string
-    ExpirationTime time.Time
-    RefreshToken string
+    accessToken string
+    expirationTime time.Time
+    refreshToken string
 }
 
 // <---------------------------------------------------------------------------------------------------->
@@ -26,7 +26,7 @@ type Token struct {
 func (token *Token) GetAccessToken() string {
     currentTime := time.Now()
 
-    if (token.ExpirationTime.Before(currentTime)) {
+    if (token.expirationTime.Before(currentTime)) {
         err := token.refreshAccessToken(currentTime)
         if err != nil {
             util.LogError(err)
@@ -34,14 +34,14 @@ func (token *Token) GetAccessToken() string {
         }
     }
 
-    return token.AccessToken
+    return token.accessToken
 }
 
 
 func (token *Token) refreshAccessToken(currentTime time.Time) error {
     parameters := map[string]string{
         "grant_type": "refresh_token",
-        "refresh_token" : token.RefreshToken,
+        "refresh_token" : token.refreshToken,
     }
     headers := map[string]string{
         "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(util.AppConfig.ClientID+":"+util.AppConfig.ClientSecret)),
@@ -53,8 +53,8 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
         return err
     }
 
-    token.AccessToken = responseMap["access_token"].(string)
-    token.ExpirationTime = time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second)
+    token.accessToken = responseMap["access_token"].(string)
+    token.expirationTime = time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second)
 
     return nil
 }
