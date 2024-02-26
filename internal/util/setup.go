@@ -35,8 +35,25 @@ type Config struct {
 
 
 
+// Setup loads our config and envs onto AppConfig
+func Setup() error {
+	err := importConfig()
+    if err != nil {
+        return err
+    }
+
+	err = loadEnv()
+    if err != nil {
+        return err
+    }
+
+	return nil
+}
+
+
+
 // importConfig loads ./configs/config onto AppConfig
-func importConfig() (error) {
+func importConfig() error {
 
     // import config file
     configFile, err := os.Open("./configs/config.json")
@@ -74,7 +91,7 @@ func importConfig() (error) {
 
 
 // loadEnv imports the envs for the spotify API from the .env file on AppConfig
-func loadEnv() (error) {
+func loadEnv() error {
 	// load envs into enviroment
     err := godotenv.Load(AppConfig.envPath)
     if err != nil {
