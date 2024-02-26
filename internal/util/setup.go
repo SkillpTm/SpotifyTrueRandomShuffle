@@ -7,7 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // <---------------------------------------------------------------------------------------------------->
@@ -63,4 +66,18 @@ func importConfig() (error) {
 	}
 
     return nil
+}
+
+
+
+// loadEnv imports the envs for the spotify API from the .env file
+func loadEnv() (string, string, string) {
+	// load envs into enviroment
+    err := godotenv.Load(AppConfig.envPath)
+    if err != nil {
+        LogError(err)
+        log.Fatal(err)
+    }
+
+    return os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"), os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
 }

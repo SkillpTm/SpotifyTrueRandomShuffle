@@ -16,8 +16,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 // <---------------------------------------------------------------------------------------------------->
@@ -32,17 +30,6 @@ func LogError(logErr error) {
     defer logFile.Close()
 
     fmt.Fprintf(logFile, "%v: %v\n", time.Now(), logErr)
-}
-
-
-func LoadEnv() (string, string, string) {
-    err := godotenv.Load(".env")
-    if err != nil {
-        LogError(err)
-        log.Fatal(err)
-    }
-
-    return os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"), os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
 }
 
 
