@@ -22,15 +22,15 @@ var AppConfig Config
 
 // Config struct is a type to hold our config data
 type Config struct {
-	callbackPath string
-	callbackPort string
-	loopRefreshTime float64
+	CallbackPath string
+	CallbackPort string
+	LoopRefreshTime float64
 	envPath string
-	errorLogPath string
+	ErrorLogPath string
 
-	clientID string
-	clientSecret string
-	redirectDomain string
+	ClientID string
+	ClientSecret string
+	RedirectDomain string
 }
 
 
@@ -78,11 +78,11 @@ func importConfig() error {
 
 	// set configData to exportable var
 	AppConfig = Config{
-		callbackPath: configData["callbackPath"].(string),
-		callbackPort: configData["callbackPort"].(string),
-		loopRefreshTime: configData["loopRefreshTime"].(float64),
+		CallbackPath: configData["callbackPath"].(string),
+		CallbackPort: configData["callbackPort"].(string),
+		LoopRefreshTime: configData["loopRefreshTime"].(float64),
 		envPath: configData["paths"].(map[string]string)["env"],
-		errorLogPath: configData["paths"].(map[string]string)["errorLog"],
+		ErrorLogPath: configData["paths"].(map[string]string)["errorLog"],
 	}
 
     return nil
@@ -98,9 +98,9 @@ func loadEnv() error {
         return errors.New("couldn't load .env file: " + err.Error())
     }
 
-	AppConfig.clientID = os.Getenv("SPOTIFY_ID")
-	AppConfig.clientSecret = os.Getenv("SPOTIFY_SECRET")
-	AppConfig.redirectDomain = os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
+	AppConfig.ClientID = os.Getenv("SPOTIFY_ID")
+	AppConfig.ClientSecret = os.Getenv("SPOTIFY_SECRET")
+	AppConfig.RedirectDomain = os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
 
     return nil
 }
