@@ -12,9 +12,22 @@ import (
 
 // <---------------------------------------------------------------------------------------------------->
 
-var Config map[string]interface{}
+var AppConfig Config
 
 // <---------------------------------------------------------------------------------------------------->
+
+
+
+// Config struct is a type to hold our config data
+type Config struct {
+	callbackPath string
+	callbackPort string
+	loopRefreshTime float64
+	envPath string
+	errorLogPath string
+}
+
+
 
 // importConfig imports to config file from ./configs/config
 func importConfig() (error) {
@@ -41,7 +54,13 @@ func importConfig() (error) {
     }
 
 	// set configData to exportable var
-	Config = configData
+	AppConfig = Config{
+		callbackPath: configData["callbackPath"].(string),
+		callbackPort: configData["callbackPort"].(string),
+		loopRefreshTime: configData["loopRefreshTime"].(float64),
+		envPath: configData["paths"].(map[string]string)["env"],
+		errorLogPath: configData["paths"].(map[string]string)["errorLog"],
+	}
 
     return nil
 }
