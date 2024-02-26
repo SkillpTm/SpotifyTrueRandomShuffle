@@ -6,6 +6,7 @@ package util
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -20,7 +21,7 @@ var AppConfig Config
 
 
 
-// Config struct is a type to hold our config data
+// Config is a type to hold our config data
 type Config struct {
 	CallbackPath string
 	CallbackPort string
@@ -54,28 +55,40 @@ func Setup() error {
 
 
 
-// importConfig loads ./configs/config onto AppConfig
-func importConfig() error {
+// GetJSONData will provide a map with JSON data of the prvoided file
+func GetJSONData(filePath string) (map[string]interface{}, error) {
+	var configData map[string]interface{}
 
-    // import config file
-    configFile, err := os.Open("./configs/config.json")
+    // open JSON file
+    configFile, err := os.Open(filePath)
     if err != nil {
-        return errors.New("couldn't open config file: " + err.Error())
+        return configData, fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
     }
     defer configFile.Close()
 
-    // read config data from file
+    // read JSON data from file
     rawConfigData, err := io.ReadAll(configFile)
     if err != nil {
-        return errors.New("couldn't read config file: " + err.Error())
+        return configData, fmt.Errorf("couldn't read JSON file (%s): %s", filePath, err.Error())
     }
 
-	var configData map[string]interface{}
-
-    // convert data to map
+    // convert JSON data to map
     err = json.Unmarshal(rawConfigData, &configData)
     if err != nil {
-        return errors.New("couldn't unmarshal raw config data: " + err.Error())
+        return configData, errors.New("couldn't unmarshal raw JSON data: " + err.Error())
+    }
+
+	return configData, nil
+}
+
+
+
+// importConfig loads ./configs/config onto AppConfig
+func importConfig() error {
+
+	configData, err := GetJSONData("./configs/config.json")
+    if err != nil {
+        return errors.New("couldn't get config.json: " + err.Error())
     }
 
 	// set configData to exportable var
