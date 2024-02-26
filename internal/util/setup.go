@@ -31,6 +31,8 @@ type Config struct {
 	ClientID string
 	ClientSecret string
 	RedirectDomain string
+
+	RedirectURI string
 }
 
 
@@ -101,6 +103,7 @@ func loadEnv() error {
 	AppConfig.ClientID = os.Getenv("SPOTIFY_ID")
 	AppConfig.ClientSecret = os.Getenv("SPOTIFY_SECRET")
 	AppConfig.RedirectDomain = os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
+	AppConfig.RedirectURI = AppConfig.RedirectDomain + AppConfig.CallbackPort + AppConfig.CallbackPath
 
     return nil
 }
