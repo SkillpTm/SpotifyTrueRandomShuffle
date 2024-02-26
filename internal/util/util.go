@@ -20,8 +20,7 @@ import (
 
 // <---------------------------------------------------------------------------------------------------->
 
-
-
+// LogError writes any error to a log file and then uses log.Fatal
 func LogError(logErr error) {
     logFile, err := os.OpenFile(AppConfig.errorLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
     if err != nil {
@@ -35,6 +34,8 @@ func LogError(logErr error) {
 }
 
 
+
+// GenerateRandomString generates a random string of Base64 characters
 func GenerateRandomString(length int) string {
     bytes := make([]byte, length)
     _, err := rand.Read(bytes)
@@ -46,6 +47,8 @@ func GenerateRandomString(length int) string {
 }
 
 
+
+// MakePOSTRequest makes a POST request with headers and parameters and returns the JSON format response as a map
 func MakePOSTRequest(requestURL string, parameters map[string]string, headers map[string]string) (map[string]interface{}, error) {
     httpClient := &http.Client{}
     postBody := url.Values{}
@@ -86,6 +89,9 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
     return responseMap, nil
 }
 
+
+
+// MakeGETRequest makes a GET request with headers and returns the JSON format response as a map
 func MakeGETRequest(requestURL string, accessToken string) (map[string]interface{}, error) {
     httpClient := &http.Client{}
 
