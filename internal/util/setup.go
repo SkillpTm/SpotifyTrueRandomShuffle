@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -28,11 +27,15 @@ type Config struct {
 	loopRefreshTime float64
 	envPath string
 	errorLogPath string
+
+	clientID string
+	clientSecret string
+	redirectDomain string
 }
 
 
 
-// importConfig imports to config file from ./configs/config
+// importConfig loads ./configs/config onto AppConfig
 func importConfig() (error) {
 
     // import config file
@@ -70,14 +73,17 @@ func importConfig() (error) {
 
 
 
-// loadEnv imports the envs for the spotify API from the .env file
-func loadEnv() (string, string, string) {
+// loadEnv imports the envs for the spotify API from the .env file on AppConfig
+func loadEnv() (error) {
 	// load envs into enviroment
     err := godotenv.Load(AppConfig.envPath)
     if err != nil {
-        LogError(err)
-        log.Fatal(err)
+        return errors.New("couldn't load .env file: " + err.Error())
     }
 
-    return os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"), os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
+	AppConfig.clientID = os.Getenv("SPOTIFY_ID")
+	AppConfig.clientSecret = os.Getenv("SPOTIFY_SECRET")
+	AppConfig.redirectDomain = os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
+
+    return nil
 }
