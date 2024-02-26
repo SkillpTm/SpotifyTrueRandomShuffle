@@ -23,13 +23,15 @@ import (
 
 
 func LogError(logErr error) {
-    logFile, err := os.OpenFile("./logs/error.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+    logFile, err := os.OpenFile(AppConfig.errorLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
     if err != nil {
         log.Fatal(err)
     }
     defer logFile.Close()
 
     fmt.Fprintf(logFile, "%v: %v\n", time.Now(), logErr)
+
+    log.Fatal(logErr)
 }
 
 
@@ -38,7 +40,6 @@ func GenerateRandomString(length int) string {
     _, err := rand.Read(bytes)
     if err != nil {
         LogError(err)
-        log.Fatal(err)
     }
 
     return base64.StdEncoding.EncodeToString(bytes)

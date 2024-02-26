@@ -26,7 +26,7 @@ type Config struct {
 	CallbackPort string
 	LoopRefreshTime float64
 	envPath string
-	ErrorLogPath string
+	errorLogPath string
 
 	ClientID string
 	ClientSecret string
@@ -82,7 +82,7 @@ func importConfig() error {
 		CallbackPort: configData["callbackPort"].(string),
 		LoopRefreshTime: configData["loopRefreshTime"].(float64),
 		envPath: configData["paths"].(map[string]string)["env"],
-		ErrorLogPath: configData["paths"].(map[string]string)["errorLog"],
+		errorLogPath: configData["paths"].(map[string]string)["errorLog"],
 	}
 
     return nil
