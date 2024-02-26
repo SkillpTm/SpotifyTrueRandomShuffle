@@ -6,7 +6,6 @@ package api
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -16,14 +15,15 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 const (
+    contentType = "application/x-www-form-urlencoded"
     responseType = "code"
     scopes = `user-read-playback-state%20user-read-currently-playing%20user-modify-playback-state%20user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative`
+
     authURL = "https://accounts.spotify.com/authorize?"
+    tokenURL = "https://accounts.spotify.com/api/token"
 )
 
 var (
-    redirectURI = util.AppConfig.RedirectDomain + util.AppConfig.CallbackPort + util.AppConfig.CallbackPath
-
     state = util.GenerateRandomString(16)
     tokenChannel = make(chan *Token)
     UserToken *Token = nil
@@ -45,10 +45,13 @@ func AuthUser() {
 
 // startHTTPServer starts a server that listens and severs on a callback
 func startHTTPServer() {
+    // setup handlers
     http.HandleFunc(util.AppConfig.CallbackPath, handleAuthCode)
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         http.NotFound(w, r)
     })
+
+    // user goroutine to listen and serve server
     go func() {
         err := http.ListenAndServe(util.AppConfig.CallbackPort, nil)
         if err != nil {
@@ -61,7 +64,7 @@ func startHTTPServer() {
 
 // requestUserAuth prints the link required for the user auth
 func requestUserAuth() {
-    fmt.Printf("Please click this link and accept access: %sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, util.AppConfig.ClientID, responseType, redirectURI, state, scopes)
+    fmt.Printf("Please click this link and accept access: %sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, util.AppConfig.ClientID, responseType, util.AppConfig.RedirectURI, state, scopes)
 }
 
 
@@ -69,20 +72,21 @@ func requestUserAuth() {
 // handleAuthCode is a handler that handles the response from Spotify and puts a Token into the tokenChannel
 func handleAuthCode(w http.ResponseWriter, r *http.Request) {
 
+    // query for state
     query := r.URL.Query()
     callbackState := query.Get("state")
 
+    // compare the states
     if (state != callbackState) {
-        http.NotFound(w, r)
+        http.Error(w, "state mismatch", http.StatusForbidden)
         util.LogError(fmt.Errorf("state mismatch: %s != %s", state, callbackState))
-        log.Fatalf("state mismatch: %s != %s\n", state, callbackState)
     }
 
+    // exchange the token
     token, err := exchangeToken(query.Get("code"))
     if err != nil {
         http.Error(w, "couldn't get token", http.StatusForbidden)
         util.LogError(err)
-        log.Fatal(err)
     }
 
     fmt.Fprintf(w, "Login Completed!")
@@ -96,14 +100,15 @@ func exchangeToken(authCode string) (Token, error) {
     parameters := map[string]string{
         "grant_type": "authorization_code",
         "code" : authCode,
-        "redirect_uri" : redirectURI,
+        "redirect_uri" : util.AppConfig.RedirectURI,
     }
     headers := map[string]string{
         "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(util.AppConfig.ClientID+":"+util.AppConfig.ClientSecret)),
-        "Content-Type" : "application/x-www-form-urlencoded",
+        "Content-Type" : contentType,
     }
 
-    responseMap, err := util.MakePOSTRequest("https://accounts.spotify.com/api/token", parameters, headers)
+    // request token from Spotify
+    responseMap, err := util.MakePOSTRequest(tokenURL, parameters, headers)
     if err != nil {
         return Token{}, err
     }
