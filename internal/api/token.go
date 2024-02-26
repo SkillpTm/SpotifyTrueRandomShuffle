@@ -44,7 +44,7 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
         "refresh_token" : token.RefreshToken,
     }
     headers := map[string]string{
-        "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(clientID+":"+clientSecret)),
+        "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(util.AppConfig.ClientID+":"+util.AppConfig.ClientSecret)),
         "Content-Type" : "application/x-www-form-urlencoded",
     }
 

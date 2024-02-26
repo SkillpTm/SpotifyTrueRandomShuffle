@@ -16,17 +16,13 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 const (
-    serverPort = ":8080"
-    serverCallback = "/callback"
-
     responseType = "code"
     scopes = `user-read-playback-state%20user-read-currently-playing%20user-modify-playback-state%20user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative`
     authURL = "https://accounts.spotify.com/authorize?"
 )
 
 var (
-    clientID, clientSecret, serverDomain = util.LoadEnv()
-    redirectURI = serverDomain + serverPort + serverCallback
+    redirectURI = util.AppConfig.RedirectDomain + util.AppConfig.CallbackPort + util.AppConfig.CallbackPath
 
     state = util.GenerateRandomString(16)
     tokenChannel = make(chan *Token)
@@ -46,12 +42,12 @@ func AuthUser() {
 
 
 func startHTTPServer() {
-    http.HandleFunc(serverCallback, handleAuthCode)
+    http.HandleFunc(util.AppConfig.CallbackPath, handleAuthCode)
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         http.NotFound(w, r)
     })
     go func() {
-        err := http.ListenAndServe(serverPort, nil)
+        err := http.ListenAndServe(util.AppConfig.CallbackPort, nil)
         if err != nil {
             util.LogError(err)
             log.Fatal(err)
@@ -61,7 +57,7 @@ func startHTTPServer() {
 
 
 func requestUserAuth() {
-    fmt.Println("Please click this link and accept access: " + fmt.Sprintf("%sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, clientID, responseType, redirectURI, state, scopes))
+    fmt.Println("Please click this link and accept access: " + fmt.Sprintf("%sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, util.AppConfig.ClientID, responseType, redirectURI, state, scopes))
 }
 
 
@@ -95,7 +91,7 @@ func exchangeToken(authCode string) (Token, error) {
         "redirect_uri" : redirectURI,
     }
     headers := map[string]string{
-        "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(clientID+":"+clientSecret)),
+        "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(util.AppConfig.ClientID+":"+util.AppConfig.ClientSecret)),
         "Content-Type" : "application/x-www-form-urlencoded",
     }
 
