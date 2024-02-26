@@ -1,0 +1,9 @@
+{
+    "callbackPath" : ":8080",
+    "callbackPort" : "/callback",
+    "loopRefreshTime" : 1.0,
+    "paths" : {
+        "env" : "./.env",
+        "errorLog" : "./logs/error.log"
+    }
+}
