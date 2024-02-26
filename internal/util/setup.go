@@ -28,6 +28,7 @@ type Config struct {
 	LoopRefreshTime float64
 	envPath string
 	errorLogPath string
+	TempPlaylistPath string
 
 	ClientID string
 	ClientSecret string
@@ -98,6 +99,7 @@ func importConfig() error {
 		LoopRefreshTime: configData["loopRefreshTime"].(float64),
 		envPath: configData["paths"].(map[string]string)["env"],
 		errorLogPath: configData["paths"].(map[string]string)["errorLog"],
+		TempPlaylistPath: configData["paths"].(map[string]string)["tempPlaylist"],
 	}
 
     return nil
