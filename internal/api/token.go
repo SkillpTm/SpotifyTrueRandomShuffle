@@ -5,7 +5,7 @@ package api
 
 import (
 	"encoding/base64"
-	"log"
+	"errors"
 	"time"
 
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/util"
@@ -33,7 +33,6 @@ func (token *Token) GetAccessToken() string {
         err := token.refreshAccessToken(currentTime)
         if err != nil {
             util.LogError(err)
-            log.Fatal(err)
         }
     }
 
@@ -55,7 +54,7 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
 
     responseMap, err := util.MakePOSTRequest(tokenURL, parameters, headers)
     if err != nil {
-        return err
+        return errors.New("couldn't POST request refreshed token: " + err.Error())
     }
 
     token.accessToken = responseMap["access_token"].(string)

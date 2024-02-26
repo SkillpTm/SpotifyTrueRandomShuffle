@@ -24,7 +24,7 @@ import (
 func LogError(logErr error) {
     logFile, err := os.OpenFile(AppConfig.errorLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
     if err != nil {
-        log.Fatal(err)
+        log.Fatal(errors.New("couldn't open log file: " + err.Error()))
     }
     defer logFile.Close()
 
@@ -40,7 +40,7 @@ func GenerateRandomString(length int) string {
     bytes := make([]byte, length)
     _, err := rand.Read(bytes)
     if err != nil {
-        LogError(err)
+        LogError(errors.New("couldn't rand read bytes for random string: " + err.Error()))
     }
 
     return base64.StdEncoding.EncodeToString(bytes)

@@ -5,6 +5,7 @@ package api
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -55,7 +56,7 @@ func startHTTPServer() {
     go func() {
         err := http.ListenAndServe(util.AppConfig.CallbackPort, nil)
         if err != nil {
-            util.LogError(err)
+            util.LogError(errors.New("couldn't listen and server http server: " + err.Error()))
         }
     }()
 }
@@ -110,7 +111,7 @@ func exchangeToken(authCode string) (Token, error) {
     // request token from Spotify
     responseMap, err := util.MakePOSTRequest(tokenURL, parameters, headers)
     if err != nil {
-        return Token{}, err
+        return Token{}, errors.New("couldn't POST request token: " + err.Error())
     }
 
     return Token{
