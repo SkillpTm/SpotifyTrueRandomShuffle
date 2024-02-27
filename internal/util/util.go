@@ -22,14 +22,17 @@ import (
 
 // LogError writes any error to a log file and then uses log.Fatal
 func LogError(logErr error) {
+    // open log file
     logFile, err := os.OpenFile(AppConfig.errorLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
     if err != nil {
         log.Fatal(errors.New("couldn't open log file: " + err.Error()))
     }
     defer logFile.Close()
-
+    
+    // write to log file
     fmt.Fprintf(logFile, "%v: %v\n", time.Now(), logErr)
 
+    // exit the program
     log.Fatal(logErr)
 }
 
@@ -37,7 +40,10 @@ func LogError(logErr error) {
 
 // GenerateRandomString generates a random string of Base64 characters
 func GenerateRandomString(length int) string {
+    // create a byte slice
     bytes := make([]byte, length)
+
+    // populate it with random bytes
     _, err := rand.Read(bytes)
     if err != nil {
         LogError(errors.New("couldn't rand read bytes for random string: " + err.Error()))
@@ -87,14 +93,14 @@ func MakePOSTRequest(requestURL string, headers map[string]string, parameters ma
         request.Header.Set(key, value)
     }
 
-    // execute request
+    // execute the request
     response, err := httpClient.Do(request)
     if err != nil {
         return responseMap, errors.New("couldn't receive POST request response: " + err.Error())
     }
     defer response.Body.Close()
 
-    // read response
+    // read the response
     responseBody, err := io.ReadAll(response.Body)
     if err != nil {
         return responseMap, errors.New("couldn't read POST request response: " + err.Error())
@@ -123,33 +129,40 @@ func MakePOSTRequest(requestURL string, headers map[string]string, parameters ma
 func MakeGETRequest(requestURL string, accessToken string) (map[string]interface{}, error) {
     httpClient := &http.Client{}
 
+    // define responseMap for later use
+    var responseMap map[string]interface{}
+
+    // create inital request
     request, err := http.NewRequest("GET", requestURL, nil)
     if err != nil {
-        return map[string]interface{}{}, errors.New("couldn't create GET request: " + err.Error())
+        return responseMap, errors.New("couldn't create GET request: " + err.Error())
     }
 
+    // add token header
     request.Header.Set("Authorization", "Bearer " + accessToken)
 
+    // execute the request
     response, err := httpClient.Do(request)
     if err != nil {
-        return map[string]interface{}{}, errors.New("couldn't receive GET request response: " + err.Error())
+        return responseMap, errors.New("couldn't receive GET request response: " + err.Error())
     }
     defer response.Body.Close()
 
+    // read the response
     responseBody, err := io.ReadAll(response.Body)
     if err != nil {
-        return map[string]interface{}{}, errors.New("couldn't read GET request response: " + err.Error())
+        return responseMap, errors.New("couldn't read GET request response: " + err.Error())
     }
 
-    var responseMap map[string]interface{}
-
+    // convert response to map, the response can be empty and still valid
     if (len(responseBody) > 0) {
         err = json.Unmarshal(responseBody, &responseMap)
         if err != nil {
-            return map[string]interface{}{}, errors.New("couldn't unmarshal JSON GET request response body: " + err.Error())
+            return responseMap, errors.New("couldn't unmarshal JSON GET request response body: " + err.Error())
         }
     }
 
+    // check if we got an error code as a response
     _, notOK := responseMap["error"]
     if (notOK) {
         return responseMap, fmt.Errorf("spotify responded with an error %d to GET request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
