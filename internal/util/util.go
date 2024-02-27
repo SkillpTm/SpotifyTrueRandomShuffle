@@ -86,6 +86,11 @@ func MakePOSTRequest(requestURL string, parameters map[string]string, headers ma
         }
     }
 
+    _, notOK := responseMap["error"]
+    if (notOK) {
+        return responseMap, fmt.Errorf("spotify responded with an error %d to POST request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
+    }
+
     return responseMap, nil
 }
 
@@ -120,6 +125,11 @@ func MakeGETRequest(requestURL string, accessToken string) (map[string]interface
         if err != nil {
             return map[string]interface{}{}, errors.New("couldn't unmarshal JSON GET request response body: " + err.Error())
         }
+    }
+
+    _, notOK := responseMap["error"]
+    if (notOK) {
+        return responseMap, fmt.Errorf("spotify responded with an error %d to GET request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
     }
 
     return responseMap, nil
