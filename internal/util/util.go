@@ -51,8 +51,12 @@ func GenerateRandomString(length int) string {
 // MakePOSTRequest makes a POST request with headers, parameters or plain text body data and returns the JSON format response as a map
 func MakePOSTRequest(requestURL string, headers map[string]string, parameters map[string]string, bodyData map[string]interface{}) (map[string]interface{}, error) {
     httpClient := &http.Client{}
+
+    // define vars for later use
+    var responseMap map[string]interface{}
     var requestBody io.Reader
 
+    // add parameters to requestBody
     if (len(parameters) != 0) {
         requestParameters := url.Values{}
 
@@ -61,44 +65,50 @@ func MakePOSTRequest(requestURL string, headers map[string]string, parameters ma
         }
 
         requestBody = strings.NewReader(requestParameters.Encode())
+
+    // add bodyData to requestBody
     } else if (len(bodyData) != 0) {
         jsonBodyData, err := json.Marshal(bodyData)
         if err != nil {
-            return map[string]interface{}{}, errors.New("couldn't marshal body data for POST request: " + err.Error())
+            return responseMap, errors.New("couldn't marshal body data for POST request: " + err.Error())
         }
 
         requestBody = strings.NewReader(string(jsonBodyData))
     }
 
+    // create request with request body
     request, err := http.NewRequest("POST", requestURL, requestBody)
     if err != nil {
-        return map[string]interface{}{}, errors.New("couldn't create POST request: " + err.Error())
+        return responseMap, errors.New("couldn't create POST request: " + err.Error())
     }
 
+    // add headers to request
     for key, value := range headers {
         request.Header.Set(key, value)
     }
 
+    // execute request
     response, err := httpClient.Do(request)
     if err != nil {
-        return map[string]interface{}{}, errors.New("couldn't receive POST request response: " + err.Error())
+        return responseMap, errors.New("couldn't receive POST request response: " + err.Error())
     }
     defer response.Body.Close()
 
+    // read response
     responseBody, err := io.ReadAll(response.Body)
     if err != nil {
-        return map[string]interface{}{}, errors.New("couldn't read POST request response: " + err.Error())
+        return responseMap, errors.New("couldn't read POST request response: " + err.Error())
     }
 
-    var responseMap map[string]interface{}
-
+    // convert response to map, the response can be empty and still valid
     if (len(responseBody) > 0) {
         err = json.Unmarshal(responseBody, &responseMap)
         if err != nil {
-            return map[string]interface{}{}, errors.New("couldn't unmarshal JSON POST request response body: " + err.Error())
+            return responseMap, errors.New("couldn't unmarshal JSON POST request response body: " + err.Error())
         }
     }
 
+    // check if we got an error code as a response
     _, notOK := responseMap["error"]
     if (notOK) {
         return responseMap, fmt.Errorf("spotify responded with an error %d to POST request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
