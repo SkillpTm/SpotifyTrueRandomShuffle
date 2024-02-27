@@ -109,7 +109,7 @@ func exchangeToken(authCode string) (Token, error) {
     }
 
     // request token from Spotify
-    responseMap, err := util.MakePOSTRequest(tokenURL, parameters, headers)
+    responseMap, err := util.MakePOSTRequest(tokenURL, headers, parameters, map[string]interface{}{})
     if err != nil {
         return Token{}, errors.New("couldn't POST request token: " + err.Error())
     }

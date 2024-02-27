@@ -52,7 +52,7 @@ func (token *Token) refreshAccessToken(currentTime time.Time) error {
         "Content-Type" : "application/x-www-form-urlencoded",
     }
 
-    responseMap, err := util.MakePOSTRequest(tokenURL, parameters, headers)
+    responseMap, err := util.MakePOSTRequest(tokenURL, headers, parameters, map[string]interface{}{})
     if err != nil {
         return errors.New("couldn't POST request refreshed token: " + err.Error())
     }
