@@ -1,6 +1,6 @@
 {
-    "callbackPath" : ":8080",
-    "callbackPort" : "/callback",
+    "callbackPath" : "/callback",
+    "callbackPort" : ":8080",
     "loopRefreshTime" : 1.0,
     "paths" : {
         "env" : "./.env",

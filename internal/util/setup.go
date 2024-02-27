@@ -97,9 +97,9 @@ func importConfig() error {
 		CallbackPath: configData["callbackPath"].(string),
 		CallbackPort: configData["callbackPort"].(string),
 		LoopRefreshTime: configData["loopRefreshTime"].(float64),
-		envPath: configData["paths"].(map[string]string)["env"],
-		errorLogPath: configData["paths"].(map[string]string)["errorLog"],
-		TempPlaylistPath: configData["paths"].(map[string]string)["tempPlaylist"],
+		envPath: configData["paths"].(map[string]interface{})["env"].(string),
+		errorLogPath: configData["paths"].(map[string]interface{})["errorLog"].(string),
+		TempPlaylistPath: configData["paths"].(map[string]interface{})["tempPlaylist"].(string),
 	}
 
     return nil
