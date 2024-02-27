@@ -48,16 +48,29 @@ func GenerateRandomString(length int) string {
 
 
 
-// MakePOSTRequest makes a POST request with headers and parameters and returns the JSON format response as a map
-func MakePOSTRequest(requestURL string, parameters map[string]string, headers map[string]string) (map[string]interface{}, error) {
+// MakePOSTRequest makes a POST request with headers, parameters or plain text body data and returns the JSON format response as a map
+func MakePOSTRequest(requestURL string, headers map[string]string, parameters map[string]string, bodyData map[string]interface{}) (map[string]interface{}, error) {
     httpClient := &http.Client{}
-    postBody := url.Values{}
+    var requestBody io.Reader
 
-    for key, value := range parameters {
-        postBody.Set(key, value)
+    if (len(parameters) != 0) {
+        requestParameters := url.Values{}
+
+        for key, value := range parameters {
+            requestParameters.Set(key, value)
+        }
+
+        requestBody = strings.NewReader(requestParameters.Encode())
+    } else if (len(bodyData) != 0) {
+        jsonBodyData, err := json.Marshal(bodyData)
+        if err != nil {
+            return map[string]interface{}{}, errors.New("couldn't marshal body data for POST request: " + err.Error())
+        }
+
+        requestBody = strings.NewReader(string(jsonBodyData))
     }
 
-    request, err := http.NewRequest("POST", requestURL, strings.NewReader(postBody.Encode()))
+    request, err := http.NewRequest("POST", requestURL, requestBody)
     if err != nil {
         return map[string]interface{}{}, errors.New("couldn't create POST request: " + err.Error())
     }
