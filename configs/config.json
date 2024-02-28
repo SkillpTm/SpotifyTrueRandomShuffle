@@ -7,5 +7,6 @@
         "errorLog" : "./logs/error.log",
         "tempPlaylist" : "./configs/tempPlaylist.json"
     },
+    "requestAuthEveryTime" : true,
     "tempPlaylistSize" : 10
 }

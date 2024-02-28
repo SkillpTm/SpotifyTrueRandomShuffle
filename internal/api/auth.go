@@ -65,7 +65,7 @@ func startHTTPServer() {
 
 // requestUserAuth prints the link required for the user auth
 func requestUserAuth() {
-	fmt.Printf("Please click this link and accept access: %sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=true", authURL, util.AppConfig.ClientID, responseType, util.AppConfig.RedirectURI, state, scopes)
+	fmt.Printf("Please click this link and accept access: %sclient_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s&show_dialog=%t", authURL, util.AppConfig.ClientID, responseType, util.AppConfig.RedirectURI, state, scopes, util.AppConfig.RequestAuthEveryTime)
 }
 
 

@@ -25,9 +25,10 @@ var AppConfig Config
 type Config struct {
 	CallbackPath string
 	CallbackPort string
-	LoopRefreshTime float64
 	envPath string
 	errorLogPath string
+	LoopRefreshTime float64
+	RequestAuthEveryTime bool
 	TempPlaylistPath string
 	TempPlaylistSize int
 
@@ -97,9 +98,10 @@ func importConfig() error {
 	AppConfig = Config{
 		CallbackPath: configData["callbackPath"].(string),
 		CallbackPort: configData["callbackPort"].(string),
-		LoopRefreshTime: configData["loopRefreshTime"].(float64),
 		envPath: configData["paths"].(map[string]interface{})["env"].(string),
 		errorLogPath: configData["paths"].(map[string]interface{})["errorLog"].(string),
+		LoopRefreshTime: configData["loopRefreshTime"].(float64),
+		RequestAuthEveryTime: configData["requestAuthEveryTime"].(bool),
 		TempPlaylistPath: configData["paths"].(map[string]interface{})["tempPlaylist"].(string),
 		TempPlaylistSize : configData["tempPlaylistSize"].(int),
 	}
