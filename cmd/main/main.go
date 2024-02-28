@@ -19,6 +19,8 @@ func main() {
 		log.Fatal(err)
 	}
 	
-    api.AuthUser()
-    player.Start()
+	api.AuthUser()
+	player.Start()
 }
+
+// TODO: update scopes

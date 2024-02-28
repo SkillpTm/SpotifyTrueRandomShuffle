@@ -43,14 +43,14 @@ type Config struct {
 // Setup loads our config and envs onto AppConfig
 func Setup() error {
 	err := importConfig()
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
 	err = loadEnv()
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -61,24 +61,24 @@ func Setup() error {
 func GetJSONData(filePath string) (map[string]interface{}, error) {
 	var configData map[string]interface{}
 
-    // open JSON file
-    configFile, err := os.Open(filePath)
-    if err != nil {
-        return configData, fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
-    }
-    defer configFile.Close()
+	// open JSON file
+	configFile, err := os.Open(filePath)
+	if err != nil {
+		return configData, fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
+	}
+	defer configFile.Close()
 
-    // read JSON data from file
-    rawConfigData, err := io.ReadAll(configFile)
-    if err != nil {
-        return configData, fmt.Errorf("couldn't read JSON file (%s): %s", filePath, err.Error())
-    }
+	// read JSON data from file
+	rawConfigData, err := io.ReadAll(configFile)
+	if err != nil {
+		return configData, fmt.Errorf("couldn't read JSON file (%s): %s", filePath, err.Error())
+	}
 
-    // convert JSON data to map
-    err = json.Unmarshal(rawConfigData, &configData)
-    if err != nil {
-        return configData, errors.New("couldn't unmarshal raw JSON data: " + err.Error())
-    }
+	// convert JSON data to map
+	err = json.Unmarshal(rawConfigData, &configData)
+	if err != nil {
+		return configData, errors.New("couldn't unmarshal raw JSON data: " + err.Error())
+	}
 
 	return configData, nil
 }
@@ -89,9 +89,9 @@ func GetJSONData(filePath string) (map[string]interface{}, error) {
 func importConfig() error {
 
 	configData, err := GetJSONData("./configs/config.json")
-    if err != nil {
-        return errors.New("couldn't get config.json: " + err.Error())
-    }
+	if err != nil {
+		return errors.New("couldn't get config.json: " + err.Error())
+	}
 
 	// set configData to exportable var
 	AppConfig = Config{
@@ -104,7 +104,7 @@ func importConfig() error {
 		TempPlaylistSize : configData["tempPlaylistSize"].(int),
 	}
 
-    return nil
+	return nil
 }
 
 
@@ -112,15 +112,15 @@ func importConfig() error {
 // loadEnv imports the envs for the spotify API from the .env file on AppConfig
 func loadEnv() error {
 	// load envs into enviroment
-    err := godotenv.Load(AppConfig.envPath)
-    if err != nil {
-        return errors.New("couldn't load .env file: " + err.Error())
-    }
+	err := godotenv.Load(AppConfig.envPath)
+	if err != nil {
+		return errors.New("couldn't load .env file: " + err.Error())
+	}
 
 	AppConfig.ClientID = os.Getenv("SPOTIFY_ID")
 	AppConfig.ClientSecret = os.Getenv("SPOTIFY_SECRET")
 	AppConfig.RedirectDomain = os.Getenv("SPOTIFY_REDIRECT_DOMAIN")
 	AppConfig.RedirectURI = AppConfig.RedirectDomain + AppConfig.CallbackPort + AppConfig.CallbackPath
 
-    return nil
+	return nil
 }
