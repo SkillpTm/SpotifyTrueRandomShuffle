@@ -29,6 +29,7 @@ type Config struct {
 	envPath string
 	errorLogPath string
 	TempPlaylistPath string
+	TempPlaylistSize int
 
 	ClientID string
 	ClientSecret string
@@ -100,6 +101,7 @@ func importConfig() error {
 		envPath: configData["paths"].(map[string]interface{})["env"].(string),
 		errorLogPath: configData["paths"].(map[string]interface{})["errorLog"].(string),
 		TempPlaylistPath: configData["paths"].(map[string]interface{})["tempPlaylist"].(string),
+		TempPlaylistSize : configData["tempPlaylistSize"].(int),
 	}
 
     return nil
