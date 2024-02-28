@@ -54,6 +54,32 @@ func GenerateRandomString(length int) string {
 
 
 
+// WriteJSONData will take a map with JSON data and the file path and write to that file
+func WriteJSONData(filePath string, inputData map[string]interface{}) error {
+	// open JSON file
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
+	}
+	defer jsonFile.Close()
+
+    // marshal the map into JSON
+    jsonData, err := json.MarshalIndent(inputData, "", "	")
+    if err != nil {
+        return errors.New("couldn't marshal JSON data: " + err.Error())
+    }
+
+    // write jsonData to file
+    _, err = jsonFile.Write(jsonData)
+    if err != nil {
+        return fmt.Errorf("couldn't write JSON data to JSON file (%s): %s", filePath, err.Error())
+    }
+
+	return nil
+}
+
+
+
 // MakePOSTRequest makes a POST request with headers, parameters or plain text body data and returns the JSON format response as a map
 func MakePOSTRequest(requestURL string, headers map[string]string, parameters map[string]string, bodyData map[string]interface{}) (map[string]interface{}, error) {
 	httpClient := &http.Client{}
