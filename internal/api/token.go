@@ -25,7 +25,7 @@ type Token struct {
 
 
 // GetAccessToken is a getter for the access token that always ensures it's up to date
-func (token *Token) GetAccessToken() string {
+func (token *Token) getAccessToken() string {
 	currentTime := time.Now()
 
 	// chech if the access token is still usable
@@ -37,6 +37,12 @@ func (token *Token) GetAccessToken() string {
 	}
 
 	return token.accessToken
+}
+
+
+
+func (token *Token) GetAccessTokenHeader() map[string]string {
+	return map[string]string{"Authorization": "Bearer " + token.getAccessToken(),}
 }
 
 
