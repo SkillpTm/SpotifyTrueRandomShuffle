@@ -75,8 +75,8 @@ func (player *Player) playbackChecks() bool {
 // validateTempPlaylist ensures that we have set the href, id and uri on the player. If needed it will also create and populate the playlist
 func (player *Player) validateTempPlaylist() error {
 	// do we already have a temp playlist on the player
-	if (player.tempPlaylistHREF == "" ||
-		player.tempPlaylistURI == "") {
+	if (player.tempPlaylistHREF != "" &&
+		player.tempPlaylistURI != "") {
 		// check if the temp plalyist has the required amount of tracks in it
 		err := player.validateTempPlaylistTracks()
 		if err != nil {
@@ -96,8 +96,8 @@ func (player *Player) validateTempPlaylist() error {
 	tempPlaylistURI := tempPlaylistMap["uri"].(string)
 
 	// did we get all temp playlist values from the json?
-	if (player.tempPlaylistHREF == "" ||
-		player.tempPlaylistURI == "") {
+	if (player.tempPlaylistHREF != "" &&
+		player.tempPlaylistURI != "") {
 		player.tempPlaylistHREF = tempPlaylistHREF
 		player.tempPlaylistURI = tempPlaylistURI
 		return nil
