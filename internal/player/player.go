@@ -164,7 +164,6 @@ func (player *Player) createTempPlaylist() error {
 		util.AppConfig.TempPlaylistPath, 
 		map[string]interface{}{
 			"href" : createPlaylistResponse["href"].(string),
-			"id" : createPlaylistResponse["id"].(string),
 			"uri" : createPlaylistResponse["uri"].(string),
 		},
 	)
