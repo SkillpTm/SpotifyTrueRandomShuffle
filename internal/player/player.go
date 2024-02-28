@@ -19,6 +19,7 @@ type Player struct {
 
 	contextHREF string
 	contextType string
+	contextURI string
 	currentlyPlayingType string
 	isPlaying bool
 	isPrivateSession bool
@@ -37,8 +38,17 @@ type Player struct {
 
 
 func (player *Player) loadPlaybackOnPlayer(playbackResponse map[string]interface{}) {
-	player.contextHREF = playbackResponse["context"].(map[string]interface{})["href"].(string)
-	player.contextType = playbackResponse["context"].(map[string]interface{})["type"].(string)
+	contextHREF := playbackResponse["context"].(map[string]interface{})["href"].(string)
+	contextType := playbackResponse["context"].(map[string]interface{})["type"].(string)
+	contextURI := playbackResponse["context"].(map[string]interface{})["uri"].(string)
+
+	// check if our context is a new album/playlist and not the temp playlist. Only then set it as the context on the player.
+	if (contextHREF != player.tempPlaylistHREF && contextURI != player.tempPlaylistURI) {
+		player.contextHREF = contextHREF
+		player.contextType = contextType
+		player.contextURI = contextURI
+	}
+
 	player.currentlyPlayingType = playbackResponse["currently_playing_type"].(string)
 	player.isPlaying = playbackResponse["is_playing"].(bool)
 	player.isPrivateSession = playbackResponse["device"].(map[string]interface{})["is_private_session"].(bool)
