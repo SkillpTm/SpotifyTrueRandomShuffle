@@ -27,7 +27,7 @@ type Player struct {
 	shuffleState bool
 	smartShuffle bool
 
-	contextLength int // make something for this
+	contextLength int
 
 	tempPlaylistHREF string
 	tempPlaylistTrackURIs []string
@@ -77,7 +77,7 @@ func (player *Player) validateTempPlaylist() error {
 	// do we already have a temp playlist on the player
 	if (player.tempPlaylistHREF == "" ||
 		player.tempPlaylistURI == "") {
-		// check if the temp plalyist has teh required amount of tracks in it
+		// check if the temp plalyist has the required amount of tracks in it
 		err := player.validateTempPlaylistTracks()
 		if err != nil {
 			return errors.New("couldn't validate temp playlist tracks: " + err.Error())
@@ -223,6 +223,42 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 }
 
 
+
+// resetContext resets all context values on the player, as weel as tempPlaylistTrackURIs and it delete all tracks from the temp playlist
+func (player *Player) resetContext() error {
+	resetContextHeaders := api.UserToken.GetAccessTokenHeader()
+	resetContextHeaders["Content-Type"] = "application/json"
+
+	var resetConextURIs []map[string]string
+
+	for _, tempPlaylistTrackURI := range player.tempPlaylistTrackURIs {
+		resetConextURIs = append(resetConextURIs, map[string]string{
+			"uri" : tempPlaylistTrackURI,
+		})
+	}
+
+	resetContextBody := map[string]interface{}{
+		"tracks" : resetConextURIs,
+	}
+
+	_, err := util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/tracks", resetContextHeaders, nil, resetContextBody)
+	if err != nil {
+		return errors.New("couldn't DELETE request all tracks from the temp playlist: " + err.Error())
+	}
+
+	// clear all context values and tempPlaylistTrackURIs so they can be set for the new context
+	player.contextHREF = ""
+	player.contextType = ""
+	player.contextURI = ""
+	player.contextLength = 0
+	player.tempPlaylistTrackURIs = nil
+
+	return nil
+}
+
+
+
+// setContextLength sets the contextLength on the player
 func (player *Player) setContextLength() error {
 	contextResponse, err := util.MakeHTTPRequest("GET", fmt.Sprintf("%s?market=%s", player.contextHREF, player.userCountry), api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
