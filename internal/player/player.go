@@ -30,7 +30,6 @@ type Player struct {
 	contextLength int // make something for this
 
 	tempPlaylistHREF string
-	tempPlaylistID string
 	tempPlaylistTrackURIs []string
 	tempPlaylistURI string
 }
@@ -76,8 +75,7 @@ func (player *Player) playbackChecks() bool {
 // validateTempPlaylist ensures that we have set the href, id and uri on the player. If needed it will also create and populate the playlist
 func (player *Player) validateTempPlaylist() error {
 	// do we already have a temp playlist on the player
-	if (player.tempPlaylistID == "" ||
-		player.tempPlaylistHREF == "" ||
+	if (player.tempPlaylistHREF == "" ||
 		player.tempPlaylistURI == "") {
 		// check if the temp plalyist has teh required amount of tracks in it
 		err := player.validateTempPlaylistTracks()
@@ -95,15 +93,12 @@ func (player *Player) validateTempPlaylist() error {
 	}
 
 	tempPlaylistHREF := tempPlaylistMap["href"].(string)
-	tempPlaylistID := tempPlaylistMap["id"].(string)
 	tempPlaylistURI := tempPlaylistMap["uri"].(string)
 
 	// did we get all temp playlist values from the json?
-	if (player.tempPlaylistID == "" ||
-		player.tempPlaylistHREF == "" ||
+	if (player.tempPlaylistHREF == "" ||
 		player.tempPlaylistURI == "") {
 		player.tempPlaylistHREF = tempPlaylistHREF
-		player.tempPlaylistID = tempPlaylistID
 		player.tempPlaylistURI = tempPlaylistURI
 		return nil
 	}
@@ -178,7 +173,6 @@ func (player *Player) createTempPlaylist() error {
 	}
 
 	player.tempPlaylistHREF = createPlaylistResponse["href"].(string)
-	player.tempPlaylistID = createPlaylistResponse["id"].(string)
 	player.tempPlaylistURI = createPlaylistResponse["uri"].(string)
 	return nil
 }
