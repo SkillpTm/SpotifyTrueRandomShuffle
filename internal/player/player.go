@@ -115,7 +115,7 @@ func (player *Player) validateTempPlaylist() error {
 	}
 
 	// it's impossible to actually delete a playlist. We're unfollowing it, so the user won't mess with it
-	_, err = util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/followers", api.UserToken.GetAccessTokenHeader(), map[string]string{}, map[string]interface{}{})
+	_, err = util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/followers", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return errors.New("couldn't DELETE request temp playlist: " + err.Error())
 	}
@@ -133,7 +133,7 @@ func (player *Player) validateTempPlaylist() error {
 
 // validateTempPlaylistTracks checks if the temp playlist has the config specified amount of tracks in it. If that's not the case it populates it.
 func (player *Player) validateTempPlaylistTracks() error {
-	playlistTracksResponse, err := util.MakeHTTPRequest("GET", player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), map[string]string{}, map[string]interface{}{})
+	playlistTracksResponse, err := util.MakeHTTPRequest("GET", player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return errors.New("couldn't GET request temp playlist tracks: " + err.Error())
 	}
@@ -160,7 +160,7 @@ func (player *Player) createTempPlaylist() error {
 		"public": false,
 	}
 
-	createPlaylistResponse, err := util.MakeHTTPRequest("POST", baseURL + createPlaylistExtension, api.UserToken.GetAccessTokenHeader(), map[string]string{}, bodyData)
+	createPlaylistResponse, err := util.MakeHTTPRequest("POST", baseURL + createPlaylistExtension, api.UserToken.GetAccessTokenHeader(), nil, bodyData)
 	if err != nil {
 		return errors.New("couldn't POST request create temp playlist: " + err.Error())
 	}
@@ -197,7 +197,7 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 	for range missingSongs {
 		randomTrackURL := fmt.Sprintf("%s/tracks?market=%s&limit=%d&offset=%d", player.contextHREF, player.userCountry, 1, rand.Intn(player.contextLength))
 
-		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL,  api.UserToken.GetAccessTokenHeader(), map[string]string{}, map[string]interface{}{})
+		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL,  api.UserToken.GetAccessTokenHeader(), nil, nil)
 		if err != nil {
 			return errors.New("couldn't GET request random track from context: " + err.Error())
 		}
@@ -219,7 +219,7 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 	}
 
 	// add songs to temp playlist
-	_, err := util.MakeHTTPRequest( "POST", player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), map[string]string{}, bodyData)
+	_, err := util.MakeHTTPRequest( "POST", player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
 	if err != nil {
 		return errors.New("couldn't POST request add in new items to temp playlist: " + err.Error())
 	}
