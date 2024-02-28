@@ -179,7 +179,7 @@ func MakePOSTRequest(requestURL string, headers map[string]string, parameters ma
 
 
 
-// MakeGETRequest makes a GET request with headers and returns the JSON format response as a map
+// MakeGETRequest makes a GET request with a token header and returns the JSON format response as a map
 func MakeGETRequest(requestURL string, accessToken string) (map[string]interface{}, error) {
 	httpClient := &http.Client{}
 
@@ -223,4 +223,47 @@ func MakeGETRequest(requestURL string, accessToken string) (map[string]interface
 	}
 
 	return responseMap, nil
+}
+
+
+
+// MakeDELETERequest makes a DELETE request with a token header
+func MakeDELETERequest(requestURL string, accessToken string) error {
+	httpClient := &http.Client{}
+
+	// create inital request
+	request, err := http.NewRequest("DELETE", requestURL, nil)
+	if err != nil {
+		return errors.New("couldn't create DELETE request: " + err.Error())
+	}
+
+	// add token header
+	request.Header.Set("Authorization", "Bearer " + accessToken)
+
+	// execute the request
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return errors.New("couldn't receive DELETE request response: " + err.Error())
+	}
+	defer response.Body.Close()
+
+	// read the response
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return errors.New("couldn't read DELETE request response: " + err.Error())
+	}
+
+	var responseMap map[string]interface{}
+
+	// convert response to map, if we get any reponse it's an error
+	if (len(responseBody) > 0) {
+		err = json.Unmarshal(responseBody, &responseMap)
+		if err != nil {
+			return errors.New("couldn't unmarshal JSON DELETE request response body: " + err.Error())
+		}
+
+		return fmt.Errorf("spotify responded with an error %d to DELETE request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
+	}
+
+	return nil
 }
