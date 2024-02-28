@@ -108,13 +108,21 @@ func WriteJSONData(filePath string, inputData map[string]interface{}) error {
 
 
 
-// MakePOSTRequest makes a POST request with headers, parameters or plain text body data and returns the JSON format response as a map
-func MakePOSTRequest(requestURL string, headers map[string]string, parameters map[string]string, bodyData map[string]interface{}) (map[string]interface{}, error) {
-	httpClient := &http.Client{}
-
+// MakeHTTPRequest makes a GET/POST/DELETE/PUT request with headers, parameters or plain text body data and returns the JSON format response as a map
+func MakeHTTPRequest(method string, requestURL string, headers map[string]string, parameters map[string]string, bodyData map[string]interface{}) (map[string]interface{}, error) {
 	// define vars for later use
 	var responseMap map[string]interface{}
-	var requestBody io.Reader
+	var requestBody io.Reader = nil
+
+	// check if the method provided is valid
+	if (method != "GET" &&
+		method != "POST" &&
+		method != "DELETE" &&
+		method != "PUT") {
+		return responseMap, fmt.Errorf("'%s' isn't a supported HTTP request method for this function", method)
+	}
+
+	httpClient := &http.Client{}
 
 	// add parameters to requestBody
 	if (len(parameters) != 0) {
@@ -130,16 +138,16 @@ func MakePOSTRequest(requestURL string, headers map[string]string, parameters ma
 	} else if (len(bodyData) != 0) {
 		jsonBodyData, err := json.Marshal(bodyData)
 		if err != nil {
-			return responseMap, errors.New("couldn't marshal body data for POST request: " + err.Error())
+			return responseMap, fmt.Errorf("couldn't marshal body data for %s request: %s", method, err.Error())
 		}
 
 		requestBody = strings.NewReader(string(jsonBodyData))
 	}
 
 	// create request with request body
-	request, err := http.NewRequest("POST", requestURL, requestBody)
+	request, err := http.NewRequest(method, requestURL, requestBody)
 	if err != nil {
-		return responseMap, errors.New("couldn't create POST request: " + err.Error())
+		return responseMap, fmt.Errorf("couldn't create %s request: %s", method, err.Error())
 	}
 
 	// add headers to request
@@ -150,120 +158,29 @@ func MakePOSTRequest(requestURL string, headers map[string]string, parameters ma
 	// execute the request
 	response, err := httpClient.Do(request)
 	if err != nil {
-		return responseMap, errors.New("couldn't receive POST request response: " + err.Error())
+		return responseMap, fmt.Errorf("couldn't receive %s request response: %s", method, err.Error())
 	}
 	defer response.Body.Close()
 
 	// read the response
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return responseMap, errors.New("couldn't read POST request response: " + err.Error())
+		return responseMap, fmt.Errorf("couldn't read %s request response: %s", method, err.Error())
 	}
 
 	// convert response to map, the response can be empty and still valid
 	if (len(responseBody) > 0) {
 		err = json.Unmarshal(responseBody, &responseMap)
 		if err != nil {
-			return responseMap, errors.New("couldn't unmarshal JSON POST request response body: " + err.Error())
+			return responseMap, fmt.Errorf("couldn't unmarshal JSON %s request response body: %s", method, err.Error())
 		}
 	}
 
 	// check if we got an error code as a response
 	_, notOK := responseMap["error"]
 	if (notOK) {
-		return responseMap, fmt.Errorf("spotify responded with an error %d to POST request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
+		return responseMap, fmt.Errorf("spotify responded with an error %d to %s request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), method, responseMap["error"].(map[string]interface{})["message"].(string))
 	}
 
 	return responseMap, nil
-}
-
-
-
-// MakeGETRequest makes a GET request with a token header and returns the JSON format response as a map
-func MakeGETRequest(requestURL string, accessToken string) (map[string]interface{}, error) {
-	httpClient := &http.Client{}
-
-	// define responseMap for later use
-	var responseMap map[string]interface{}
-
-	// create inital request
-	request, err := http.NewRequest("GET", requestURL, nil)
-	if err != nil {
-		return responseMap, errors.New("couldn't create GET request: " + err.Error())
-	}
-
-	// add token header
-	request.Header.Set("Authorization", "Bearer " + accessToken)
-
-	// execute the request
-	response, err := httpClient.Do(request)
-	if err != nil {
-		return responseMap, errors.New("couldn't receive GET request response: " + err.Error())
-	}
-	defer response.Body.Close()
-
-	// read the response
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return responseMap, errors.New("couldn't read GET request response: " + err.Error())
-	}
-
-	// convert response to map, the response can be empty and still valid
-	if (len(responseBody) > 0) {
-		err = json.Unmarshal(responseBody, &responseMap)
-		if err != nil {
-			return responseMap, errors.New("couldn't unmarshal JSON GET request response body: " + err.Error())
-		}
-	}
-
-	// check if we got an error code as a response
-	_, notOK := responseMap["error"]
-	if (notOK) {
-		return responseMap, fmt.Errorf("spotify responded with an error %d to GET request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
-	}
-
-	return responseMap, nil
-}
-
-
-
-// MakeDELETERequest makes a DELETE request with a token header
-func MakeDELETERequest(requestURL string, accessToken string) error {
-	httpClient := &http.Client{}
-
-	// create inital request
-	request, err := http.NewRequest("DELETE", requestURL, nil)
-	if err != nil {
-		return errors.New("couldn't create DELETE request: " + err.Error())
-	}
-
-	// add token header
-	request.Header.Set("Authorization", "Bearer " + accessToken)
-
-	// execute the request
-	response, err := httpClient.Do(request)
-	if err != nil {
-		return errors.New("couldn't receive DELETE request response: " + err.Error())
-	}
-	defer response.Body.Close()
-
-	// read the response
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return errors.New("couldn't read DELETE request response: " + err.Error())
-	}
-
-	var responseMap map[string]interface{}
-
-	// convert response to map, if we get any reponse it's an error
-	if (len(responseBody) > 0) {
-		err = json.Unmarshal(responseBody, &responseMap)
-		if err != nil {
-			return errors.New("couldn't unmarshal JSON DELETE request response body: " + err.Error())
-		}
-
-		return fmt.Errorf("spotify responded with an error %d to DELETE request: %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), responseMap["error"].(map[string]interface{})["message"].(string))
-	}
-
-	return nil
 }
