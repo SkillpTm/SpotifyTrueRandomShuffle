@@ -98,6 +98,12 @@ func (player *Player) validateTempPlaylist() error {
 		return errors.New("couldn't create temp playlist: " + err.Error())
 	}
 
+	// it's impossible to actually delete a playlist. We're unfollowing it, so the user won't mess with it
+	err = util.MakeDELETERequest(player.tempPlaylistHREF + "/followers", api.UserToken.GetAccessToken())
+	if err != nil {
+		return errors.New("couldn't DELETE request temp playlist: " + err.Error())
+	}
+
 	// since the temp playlist just got created populate it
 	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
 	if err != nil {
@@ -109,10 +115,7 @@ func (player *Player) validateTempPlaylist() error {
 
 
 
-/*
-createTempPlaylist creates the temp playlist needed for the main loop and sets temp playlist values to the player.
-It's actually impossible to delete a playlist on spotify (you're simply unfollowing it) meaning this should only ever be executed once
-*/
+// createTempPlaylist creates the temp playlist needed for the main loop and sets temp playlist values to the player.
 func (player *Player) createTempPlaylist() error {
 	headers := map[string]string{
 		"Authorization": "Bearer " + api.UserToken.GetAccessToken(),
@@ -120,7 +123,7 @@ func (player *Player) createTempPlaylist() error {
 
 	bodyData := map[string]interface{}{
 		"name": "TrueRandomShuffle",
-		"desciption": "This playlist was automatically create by SpotifyTrueRandomShuffle. Please do not add any songs to it, if you want to listen to any song use the queue feature.",
+		"desciption": "DO NOT add ANYTHING to this playlist. This playlist was automatically create by SpotifyTrueRandomShuffle.",
 		"public": false,
 	}
 
