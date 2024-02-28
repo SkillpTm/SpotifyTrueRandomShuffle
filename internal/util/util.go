@@ -54,6 +54,34 @@ func GenerateRandomString(length int) string {
 
 
 
+// GetJSONData will provide a map with JSON data of the prvoided file
+func GetJSONData(filePath string) (map[string]interface{}, error) {
+	var jsonData map[string]interface{}
+
+	// open JSON file
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		return jsonData, fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
+	}
+	defer jsonFile.Close()
+
+	// read JSON data from file
+	rawJSONData, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return jsonData, fmt.Errorf("couldn't read JSON file (%s): %s", filePath, err.Error())
+	}
+
+	// convert JSON data to map
+	err = json.Unmarshal(rawJSONData, &jsonData)
+	if err != nil {
+		return jsonData, errors.New("couldn't unmarshal raw JSON data: " + err.Error())
+	}
+
+	return jsonData, nil
+}
+
+
+
 // WriteJSONData will take a map with JSON data and the file path and write to that file
 func WriteJSONData(filePath string, inputData map[string]interface{}) error {
 	// open JSON file

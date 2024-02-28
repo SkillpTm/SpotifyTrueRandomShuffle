@@ -4,10 +4,7 @@ package util
 // <---------------------------------------------------------------------------------------------------->
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -54,34 +51,6 @@ func Setup() error {
 	}
 
 	return nil
-}
-
-
-
-// GetJSONData will provide a map with JSON data of the prvoided file
-func GetJSONData(filePath string) (map[string]interface{}, error) {
-	var configData map[string]interface{}
-
-	// open JSON file
-	configFile, err := os.Open(filePath)
-	if err != nil {
-		return configData, fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
-	}
-	defer configFile.Close()
-
-	// read JSON data from file
-	rawConfigData, err := io.ReadAll(configFile)
-	if err != nil {
-		return configData, fmt.Errorf("couldn't read JSON file (%s): %s", filePath, err.Error())
-	}
-
-	// convert JSON data to map
-	err = json.Unmarshal(rawConfigData, &configData)
-	if err != nil {
-		return configData, errors.New("couldn't unmarshal raw JSON data: " + err.Error())
-	}
-
-	return configData, nil
 }
 
 
