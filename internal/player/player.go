@@ -83,9 +83,9 @@ func (player *Player) validateTempPlaylist() error {
 	tempPlaylistURI := tempPlaylistMap["uri"].(string)
 
 	// did we get all temp playlist values from the json?
-	if (player.tempPlaylistID != "" &&
-		player.tempPlaylistHREF != "" &&
-		player.tempPlaylistURI != "") {
+	if (player.tempPlaylistID == "" ||
+		player.tempPlaylistHREF == "" ||
+		player.tempPlaylistURI == "") {
 		player.tempPlaylistHREF = tempPlaylistHREF
 		player.tempPlaylistID = tempPlaylistID
 		player.tempPlaylistURI = tempPlaylistURI
@@ -109,7 +109,10 @@ func (player *Player) validateTempPlaylist() error {
 
 
 
-// createTempPlaylist creates the temp playlist needed for the main loop and sets temp playlist values to the player 
+/*
+createTempPlaylist creates the temp playlist needed for the main loop and sets temp playlist values to the player.
+It's actually impossible to delete a playlist on spotify (you're simply unfollowing it) meaning this should only ever be executed once
+*/
 func (player *Player) createTempPlaylist() error {
 	headers := map[string]string{
 		"Authorization": "Bearer " + api.UserToken.GetAccessToken(),
@@ -117,13 +120,25 @@ func (player *Player) createTempPlaylist() error {
 
 	bodyData := map[string]interface{}{
 		"name": "TrueRandomShuffle",
-		"desciption": "This playlist was automatically create by SpotifyTrueRandomShuffle. Please do not delete it unless you stopped using the program. You may move this playlist in any folder.",
+		"desciption": "This playlist was automatically create by SpotifyTrueRandomShuffle. Please do not add any songs to it, if you want to listen to any song use the queue feature.",
 		"public": false,
 	}
 
 	createPlaylistResponse, err := util.MakePOSTRequest(baseURL + createPlaylistExtension, headers, map[string]string{}, bodyData)
 	if err != nil {
 		return errors.New("couldn't POST request create temp playlist: " + err.Error())
+	}
+
+	err = util.WriteJSONData(
+		util.AppConfig.TempPlaylistPath, 
+		map[string]interface{}{
+			"href" : createPlaylistResponse["href"].(string),
+			"id" : createPlaylistResponse["id"].(string),
+			"uri" : createPlaylistResponse["uri"].(string),
+		},
+	)
+	if err != nil {
+		return errors.New("couldn't write temp playlist data to JSOON: " + err.Error())
 	}
 
 	player.tempPlaylistHREF = createPlaylistResponse["href"].(string)
