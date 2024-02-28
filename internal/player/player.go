@@ -228,3 +228,26 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 
 	return nil
 }
+
+
+
+// playTempPlaylist starts playing our temp playlista nd turns shuffle on it off
+func (player *Player) playTempPlaylist() error {
+	startPlaybackHeaders := api.UserToken.GetAccessTokenHeader()
+	startPlaybackHeaders["Content-Type:"] = "application/json"
+
+	startPlaybackData := map[string]interface{}{"context_uri" : player.tempPlaylistURI}
+
+	_, err := util.MakeHTTPRequest("PUT", baseURL + startPlaybackExtension, startPlaybackHeaders, nil, startPlaybackData)
+	if (err != nil) {
+		return errors.New("couldn't PUT request start playback: " + err.Error())
+	}
+
+	// turn of shuffle for the temp playlist
+	_, err = util.MakeHTTPRequest("PUT", baseURL + tooglePlaybackShuffleExtension + "?state=false", api.UserToken.GetAccessTokenHeader(), nil, nil)
+	if (err != nil) {
+		return errors.New("couldn't PUT request start playback: " + err.Error())
+	}
+
+	return nil
+}
