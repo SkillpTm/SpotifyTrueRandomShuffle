@@ -230,6 +230,23 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 }
 
 
+func (player *Player) setContextLength() error {
+	contextResponse, err := util.MakeHTTPRequest("GET", fmt.Sprintf("%s?market=%s", player.contextHREF, player.userCountry), api.UserToken.GetAccessTokenHeader(), nil, nil)
+	if err != nil {
+		return errors.New("couldn't GET request context type: " + err.Error())
+	}
+
+	// depending on the context type the length is in another part of the JSON
+	if (player.contextType == "album") {
+		player.contextLength = int(contextResponse["total_tracks"].(float64))
+	} else if (player.contextType == "playlist") {
+		player.contextLength = int(contextResponse["tracks"].(map[string]interface{})["total"].(float64))
+	}
+
+	return nil
+}
+
+
 
 // playTempPlaylist starts playing our temp playlista nd turns shuffle on it off
 func (player *Player) playTempPlaylist() error {
