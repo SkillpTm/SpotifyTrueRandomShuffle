@@ -15,17 +15,50 @@ import (
 // Player holds all the data and functions relevant for the main loop
 type Player struct {
 	userCountry string
+	userID string
 
 	contextHREF string
-	contextLength int
 	contextType string
+	currentlyPlayingType string
+	isPlaying bool
+	isPrivateSession bool
+	repeatState string
+	shuffleState bool
+	smartShuffle bool
+
+	contextLength int // make something for this
 
 	tempPlaylistHREF string
 	tempPlaylistID string
 	tempPlaylistTrackURIs []string
 	tempPlaylistURI string
+}
 
-	userID string
+
+
+func (player *Player) loadPlaybackOnPlayer(playbackResponse map[string]interface{}) {
+	player.contextHREF = playbackResponse["context"].(map[string]interface{})["href"].(string)
+	player.contextType = playbackResponse["context"].(map[string]interface{})["type"].(string)
+	player.currentlyPlayingType = playbackResponse["currently_playing_type"].(string)
+	player.isPlaying = playbackResponse["is_playing"].(bool)
+	player.isPrivateSession = playbackResponse["device"].(map[string]interface{})["is_private_session"].(bool)
+	player.repeatState = playbackResponse["repeat_state"].(string)
+	player.shuffleState = playbackResponse["shuffle_state"].(bool)
+	player.smartShuffle = playbackResponse["smart_shuffle"].(bool)
+}
+
+
+
+// playbackChecks returns true if any of it's checks failed
+func (player *Player) playbackChecks() bool {
+	return	!player.isPlaying ||						// isn't playing something right now
+			player.isPrivateSession ||					// is in a private session
+			player.currentlyPlayingType != "track" ||	// isn't listening to a track
+			player.repeatState == "track" ||			// does have repeat turned on for this track
+			!player.shuffleState ||						// hasn't turned on shuffle
+			player.smartShuffle ||						// has turned on smart shuffle
+			player.contextType == "show" ||				// context is a show
+			player.contextType == "artist"				// context is an artist
 }
 
 
