@@ -69,6 +69,12 @@ func (player *Player) validateTempPlaylist() error {
 	if (player.tempPlaylistID == "" ||
 		player.tempPlaylistHREF == "" ||
 		player.tempPlaylistURI == "") {
+		// check if the temp plalyist has teh required amount of tracks in it
+		err := player.validateTempPlaylistTracks()
+		if err != nil {
+			return errors.New("couldn't validate temp playlist tracks: " + err.Error())
+		}
+
 		return nil
 	}
 
@@ -106,6 +112,26 @@ func (player *Player) validateTempPlaylist() error {
 
 	// since the temp playlist just got created populate it
 	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
+	if err != nil {
+		return errors.New("couldn't populate temp playlist: " + err.Error())
+	}
+
+	return nil
+}
+
+
+
+// validateTempPlaylistTracks checks if the temp playlist has the config specified amount of tracks in it. If that's not the case it populates it.
+func (player *Player) validateTempPlaylistTracks() error {
+	playlistTracksResponse, err := util.MakeGETRequest(player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessToken())
+	if err != nil {
+		return errors.New("couldn't GET request temp playlist tracks: " + err.Error())
+	}
+
+	playlistTracksLength := int(playlistTracksResponse["total"].(float64))
+
+	// add the compared amount of songs to the temp playlist (this value can be zero)
+	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize - playlistTracksLength)
 	if err != nil {
 		return errors.New("couldn't populate temp playlist: " + err.Error())
 	}
@@ -154,6 +180,10 @@ func (player *Player) createTempPlaylist() error {
 
 // populateTempPlaylist adds the amount fo missing songs to the temp playlist
 func (player *Player) populateTempPlaylist(missingSongs int) error {
+	if (missingSongs == 0) {
+		return nil
+	}
+
 	var newTracks []string
 
 	// loop to add song URIs to newTracks
