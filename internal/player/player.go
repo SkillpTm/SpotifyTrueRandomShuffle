@@ -30,6 +30,52 @@ type Player struct {
 
 
 
+// validateTempPlaylist ensures that we have set the href, id and uri on the player. If needed it will also create and populate the playlist
+func (player *Player) validateTempPlaylist() error {
+	// do we already have a temp playlist on the player
+	if (player.tempPlaylistID != "" &&
+		player.tempPlaylistHREF != "" &&
+		player.tempPlaylistURI != "") {
+		return nil
+	}
+
+	// get the temp playlist uri from the JSON
+	tempPlaylistMap, err := util.GetJSONData(util.AppConfig.TempPlaylistPath)
+	if err != nil {
+		return errors.New("couldn't get temp playlist json: " + err.Error())
+	}
+
+	tempPlaylistHREF := tempPlaylistMap["href"].(string)
+	tempPlaylistID := tempPlaylistMap["id"].(string)
+	tempPlaylistURI := tempPlaylistMap["uri"].(string)
+
+	// did we get all temp playlist values from the json?
+	if (player.tempPlaylistID != "" &&
+		player.tempPlaylistHREF != "" &&
+		player.tempPlaylistURI != "") {
+		player.tempPlaylistHREF = tempPlaylistHREF
+		player.tempPlaylistID = tempPlaylistID
+		player.tempPlaylistURI = tempPlaylistURI
+		return nil
+	}
+
+	// since there is no temp playlist we create one
+	err = player.createTempPlaylist()
+	if err != nil {
+		return errors.New("couldn't create temp playlist: " + err.Error())
+	}
+
+	// since the temp playlist just got created populate it
+	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
+	if err != nil {
+		return errors.New("couldn't populate temp playlist: " + err.Error())
+	}
+
+	return nil
+}
+
+
+
 // createTempPlaylist creates the temp playlist needed for the main loop and sets temp playlist values to the player 
 func (player *Player) createTempPlaylist() error {
 	headers := map[string]string{
