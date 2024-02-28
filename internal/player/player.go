@@ -66,9 +66,9 @@ func (player *Player) playbackChecks() bool {
 // validateTempPlaylist ensures that we have set the href, id and uri on the player. If needed it will also create and populate the playlist
 func (player *Player) validateTempPlaylist() error {
 	// do we already have a temp playlist on the player
-	if (player.tempPlaylistID != "" &&
-		player.tempPlaylistHREF != "" &&
-		player.tempPlaylistURI != "") {
+	if (player.tempPlaylistID == "" ||
+		player.tempPlaylistHREF == "" ||
+		player.tempPlaylistURI == "") {
 		return nil
 	}
 
@@ -139,7 +139,7 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 	var newTracks []string
 
 	// loop to add song URIs to newTracks
-	for _ = range missingSongs {
+	for range missingSongs {
 		randomTrackURL := fmt.Sprintf("%s/tracks?market=%s&limit=%d&offset=%d", player.contextHREF, player.userCountry, 1, rand.Intn(player.contextLength))
 
 		randomTrackResponse, err := util.MakeGETRequest(randomTrackURL, api.UserToken.GetAccessToken())
