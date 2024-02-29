@@ -108,6 +108,13 @@ func (player *Player) validateTempPlaylist() error {
 		tempPlaylistURI != "") {
 		player.tempPlaylistHREF = tempPlaylistHREF
 		player.tempPlaylistURI = tempPlaylistURI
+
+		// reset the temp playlist from a previous exectuion to avoid missmatching with our data
+		err = player.resetTempPlaylist()
+		if err != nil {
+			return errors.New("couldn't reset temp playlist: " + err.Error())
+		}
+
 		return nil
 	}
 
@@ -124,6 +131,56 @@ func (player *Player) validateTempPlaylist() error {
 	}
 
 	// since the temp playlist just got created populate it
+	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
+	if err != nil {
+		return errors.New("couldn't populate temp playlist: " + err.Error())
+	}
+
+	return nil
+}
+
+
+// resetTempPlaylist clears the temp playlist, this is only required when restarting the application
+func (player *Player) resetTempPlaylist() error {
+	// get temp playlist tracks
+	tempPlaylistTracks, err := util.MakeHTTPRequest("GET", player.tempPlaylistHREF + "/tracks",  api.UserToken.GetAccessTokenHeader(), nil, nil)
+	if err != nil {
+		return errors.New("couldn't GET request random track from context: " + err.Error())
+	}
+
+	// return early if the temp playlist is already empty
+	if (len(tempPlaylistTracks["items"].([]interface{})) == 0) {
+		// re-populate the playlist
+		err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
+		if err != nil {
+			return errors.New("couldn't populate temp playlist: " + err.Error())
+		}
+
+		return nil
+	}
+
+	resetTempPlaylistHeaders := api.UserToken.GetAccessTokenHeader()
+	resetTempPlaylistHeaders["Content-Type"] = "application/json"
+
+	var resetTempPlaylistURIs []map[string]string
+
+	for _, item := range tempPlaylistTracks["items"].([]interface{}) {
+		resetTempPlaylistURIs = append(resetTempPlaylistURIs, map[string]string{
+			"uri" : item.(map[string]interface{})["track"].(map[string]interface{})["uri"].(string),
+		})
+	}
+
+	resetTempPlaylistBody := map[string]interface{}{
+		"tracks" : resetTempPlaylistURIs,
+	}
+
+	// delete temp playlist tracks
+	_, err = util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/tracks", resetTempPlaylistHeaders, nil, resetTempPlaylistBody)
+	if err != nil {
+		return errors.New("couldn't DELETE request all tracks from the temp playlist: " + err.Error())
+	}
+
+	// re-populate the playlist
 	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
 	if err != nil {
 		return errors.New("couldn't populate temp playlist: " + err.Error())
