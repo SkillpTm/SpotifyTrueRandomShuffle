@@ -72,7 +72,7 @@ func importConfig() error {
 		LoopRefreshTime: configData["loopRefreshTime"].(float64),
 		RequestAuthEveryTime: configData["requestAuthEveryTime"].(bool),
 		TempPlaylistPath: configData["paths"].(map[string]interface{})["tempPlaylist"].(string),
-		TempPlaylistSize : configData["tempPlaylistSize"].(int),
+		TempPlaylistSize : int(configData["tempPlaylistSize"].(float64)),
 	}
 
 	return nil
