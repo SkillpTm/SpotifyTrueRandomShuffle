@@ -84,8 +84,8 @@ func GetJSONData(filePath string) (map[string]interface{}, error) {
 
 // WriteJSONData will take a map with JSON data and the file path and write to that file
 func WriteJSONData(filePath string, inputData map[string]interface{}) error {
-	// open JSON file
-	jsonFile, err := os.Open(filePath)
+	// open JSON file in write-only and truncate mode
+	jsonFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return fmt.Errorf("couldn't open JSON file (%s): %s", filePath, err.Error())
 	}
