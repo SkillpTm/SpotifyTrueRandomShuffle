@@ -4,7 +4,7 @@ package util
 // <---------------------------------------------------------------------------------------------------->
 
 import (
-	"errors"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -60,7 +60,7 @@ func importConfig() error {
 
 	configData, err := GetJSONData("./configs/config.json")
 	if err != nil {
-		return errors.New("couldn't get config.json: " + err.Error())
+		return fmt.Errorf("couldn't get config.json; %s", err.Error())
 	}
 
 	// set configData to exportable var
@@ -85,7 +85,7 @@ func loadEnv() error {
 	// load envs into enviroment
 	err := godotenv.Load(AppConfig.envPath)
 	if err != nil {
-		return errors.New("couldn't load .env file: " + err.Error())
+		return fmt.Errorf("couldn't load .env file; %s", err.Error())
 	}
 
 	AppConfig.ClientID = os.Getenv("SPOTIFY_ID")

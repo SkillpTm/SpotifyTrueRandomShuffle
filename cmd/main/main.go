@@ -3,6 +3,7 @@ package main
 // <---------------------------------------------------------------------------------------------------->
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/api"
@@ -16,11 +17,14 @@ import (
 func main() {
 	err := util.Setup()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("couldn't setup config; %s", err.Error()))
 	}
 	
 	api.AuthUser()
-	player.Start()
+	err = player.Start()
+	if err != nil {
+		util.LogError(fmt.Errorf("couldn't continue main loop; %s", err.Error()))
+	}
 }
 
 // TODO: update scopes

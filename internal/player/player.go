@@ -2,7 +2,6 @@
 package player
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 
@@ -37,23 +36,20 @@ type Player struct {
 
 
 func (player *Player) loadPlaybackOnPlayer(playbackResponse map[string]interface{}) {
-	contextHREF := playbackResponse["context"].(map[string]interface{})["href"].(string)
-	contextType := playbackResponse["context"].(map[string]interface{})["type"].(string)
-	contextURI := playbackResponse["context"].(map[string]interface{})["uri"].(string)
-
-	// check if our context is a new album/playlist and not the temp playlist. Only then set it as the context on the player.
-	if (contextHREF != player.tempPlaylistHREF && contextURI != player.tempPlaylistURI) {
-		player.contextHREF = contextHREF
-		player.contextType = contextType
-		player.contextURI = contextURI
-	}
-
+	// add all relevant values to the player
 	player.currentlyPlayingType = playbackResponse["currently_playing_type"].(string)
 	player.isPlaying = playbackResponse["is_playing"].(bool)
 	player.isPrivateSession = playbackResponse["device"].(map[string]interface{})["is_private_session"].(bool)
 	player.repeatState = playbackResponse["repeat_state"].(string)
 	player.shuffleState = playbackResponse["shuffle_state"].(bool)
 	player.smartShuffle = playbackResponse["smart_shuffle"].(bool)
+
+	// check if our context is a new album/playlist and not the temp playlist. Only then set it as the context on the player.
+	if (player.tempPlaylistURI != playbackResponse["context"].(map[string]interface{})["uri"].(string)) {
+		player.contextHREF = playbackResponse["context"].(map[string]interface{})["href"].(string)
+		player.contextType = playbackResponse["context"].(map[string]interface{})["type"].(string)
+		player.contextURI = playbackResponse["context"].(map[string]interface{})["uri"].(string)
+	}
 }
 
 
@@ -88,7 +84,7 @@ func (player *Player) validateTempPlaylist() error {
 		// check if the temp plalyist has the required amount of tracks in it
 		err := player.validateTempPlaylistTracks()
 		if err != nil {
-			return errors.New("couldn't validate temp playlist tracks: " + err.Error())
+			return fmt.Errorf("couldn't validate temp playlist tracks; %s", err.Error())
 		}
 
 		return nil
@@ -97,7 +93,7 @@ func (player *Player) validateTempPlaylist() error {
 	// get the temp playlist uri from the JSON
 	tempPlaylistMap, err := util.GetJSONData(util.AppConfig.TempPlaylistPath)
 	if err != nil {
-		return errors.New("couldn't get temp playlist json: " + err.Error())
+		return fmt.Errorf("couldn't get temp playlist json; %s", err.Error())
 	}
 
 	tempPlaylistHREF := tempPlaylistMap["href"].(string)
@@ -112,7 +108,7 @@ func (player *Player) validateTempPlaylist() error {
 		// reset the temp playlist from a previous exectuion to avoid missmatching with our data
 		err = player.resetTempPlaylist()
 		if err != nil {
-			return errors.New("couldn't reset temp playlist: " + err.Error())
+			return fmt.Errorf("couldn't reset temp playlist; %s", err.Error())
 		}
 
 		return nil
@@ -121,19 +117,19 @@ func (player *Player) validateTempPlaylist() error {
 	// since there is no temp playlist we create one
 	err = player.createTempPlaylist()
 	if err != nil {
-		return errors.New("couldn't create temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't create temp playlist; %s", err.Error())
 	}
 
 	// it's impossible to actually delete a playlist. We're unfollowing it, so the user won't mess with it
 	_, err = util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/followers", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
-		return errors.New("couldn't DELETE request temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't DELETE request temp playlist; %s", err.Error())
 	}
 
 	// since the temp playlist just got created populate it
 	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
 	if err != nil {
-		return errors.New("couldn't populate temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't populate temp playlist; %s", err.Error())
 	}
 
 	return nil
@@ -145,7 +141,7 @@ func (player *Player) resetTempPlaylist() error {
 	// get temp playlist tracks
 	tempPlaylistTracks, err := util.MakeHTTPRequest("GET", player.tempPlaylistHREF + "/tracks",  api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
-		return errors.New("couldn't GET request random track from context: " + err.Error())
+		return fmt.Errorf("couldn't GET request random track from context; %s", err.Error())
 	}
 
 	// return early if the temp playlist is already empty
@@ -153,7 +149,7 @@ func (player *Player) resetTempPlaylist() error {
 		// re-populate the playlist
 		err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
 		if err != nil {
-			return errors.New("couldn't populate temp playlist: " + err.Error())
+			return fmt.Errorf("couldn't populate temp playlist; %s", err.Error())
 		}
 
 		return nil
@@ -177,13 +173,13 @@ func (player *Player) resetTempPlaylist() error {
 	// delete temp playlist tracks
 	_, err = util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/tracks", resetTempPlaylistHeaders, nil, resetTempPlaylistBody)
 	if err != nil {
-		return errors.New("couldn't DELETE request all tracks from the temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't DELETE request all tracks from the temp playlist; %s", err.Error())
 	}
 
 	// re-populate the playlist
 	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize)
 	if err != nil {
-		return errors.New("couldn't populate temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't populate temp playlist; %s", err.Error())
 	}
 
 	return nil
@@ -195,7 +191,7 @@ func (player *Player) resetTempPlaylist() error {
 func (player *Player) validateTempPlaylistTracks() error {
 	playlistTracksResponse, err := util.MakeHTTPRequest("GET", player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
-		return errors.New("couldn't GET request temp playlist tracks: " + err.Error())
+		return fmt.Errorf("couldn't GET request temp playlist tracks; %s", err.Error())
 	}
 
 	playlistTracksLength := int(playlistTracksResponse["total"].(float64))
@@ -203,7 +199,7 @@ func (player *Player) validateTempPlaylistTracks() error {
 	// add the compared amount of songs to the temp playlist (this value can be zero)
 	err = player.populateTempPlaylist(util.AppConfig.TempPlaylistSize - playlistTracksLength)
 	if err != nil {
-		return errors.New("couldn't populate temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't populate temp playlist; %s", err.Error())
 	}
 
 	return nil
@@ -224,7 +220,7 @@ func (player *Player) createTempPlaylist() error {
 
 	createPlaylistResponse, err := util.MakeHTTPRequest("POST", baseURL + createPlaylistExtension, createPlaylistHeaders, nil, bodyData)
 	if err != nil {
-		return errors.New("couldn't POST request create temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't POST request create temp playlist; %s", err.Error())
 	}
 
 	err = util.WriteJSONData(
@@ -235,7 +231,7 @@ func (player *Player) createTempPlaylist() error {
 		},
 	)
 	if err != nil {
-		return errors.New("couldn't write temp playlist data to JSOON: " + err.Error())
+		return fmt.Errorf("couldn't write temp playlist data to JSON; %s", err.Error())
 	}
 
 	player.tempPlaylistHREF = createPlaylistResponse["href"].(string)
@@ -259,7 +255,7 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 
 		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL,  api.UserToken.GetAccessTokenHeader(), nil, nil)
 		if err != nil {
-			return errors.New("couldn't GET request random track from context: " + err.Error())
+			return fmt.Errorf("couldn't GET request random track from context; %s", err.Error())
 		}
 
 		randomTrackURI := ""
@@ -281,7 +277,7 @@ func (player *Player) populateTempPlaylist(missingSongs int) error {
 	// add songs to temp playlist
 	_, err := util.MakeHTTPRequest( "POST", player.tempPlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
 	if err != nil {
-		return errors.New("couldn't POST request add in new items to temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't POST request add in new items to temp playlist; %s", err.Error())
 	}
 
 	player.tempPlaylistTrackURIs = append(player.tempPlaylistTrackURIs, newTracks...)
@@ -310,7 +306,7 @@ func (player *Player) resetContext() error {
 
 	_, err := util.MakeHTTPRequest("DELETE", player.tempPlaylistHREF + "/tracks", resetContextHeaders, nil, resetContextBody)
 	if err != nil {
-		return errors.New("couldn't DELETE request all tracks from the temp playlist: " + err.Error())
+		return fmt.Errorf("couldn't DELETE request all tracks from the temp playlist; %s", err.Error())
 	}
 
 	// clear all context values and tempPlaylistTrackURIs so they can be set for the new context
@@ -329,7 +325,7 @@ func (player *Player) resetContext() error {
 func (player *Player) setContextLength() error {
 	contextResponse, err := util.MakeHTTPRequest("GET", fmt.Sprintf("%s?market=%s", player.contextHREF, player.userCountry), api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
-		return errors.New("couldn't GET request context type: " + err.Error())
+		return fmt.Errorf("couldn't GET request context type; %s", err.Error())
 	}
 
 	// depending on the context type the length is in another part of the JSON
@@ -352,14 +348,14 @@ func (player *Player) playTempPlaylist() error {
 	startPlaybackData := map[string]interface{}{"context_uri" : player.tempPlaylistURI}
 
 	_, err := util.MakeHTTPRequest("PUT", baseURL + startPlaybackExtension, startPlaybackHeaders, nil, startPlaybackData)
-	if (err != nil) {
-		return errors.New("couldn't PUT request start playback: " + err.Error())
+	if err != nil {
+		return fmt.Errorf("couldn't PUT request start playback; %s", err.Error())
 	}
 
 	// turn of shuffle for the temp playlist
 	_, err = util.MakeHTTPRequest("PUT", baseURL + tooglePlaybackShuffleExtension + "?state=false", api.UserToken.GetAccessTokenHeader(), nil, nil)
-	if (err != nil) {
-		return errors.New("couldn't PUT request shuffle playback: " + err.Error())
+	if err != nil {
+		return fmt.Errorf("couldn't PUT request shuffle playback; %s", err.Error())
 	}
 
 	return nil
