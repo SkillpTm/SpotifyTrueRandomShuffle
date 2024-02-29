@@ -31,6 +31,12 @@ SPOTIFY_SECRET = "[INSERT SECRET HERE]"
 SPOTIFY_REDIRECT_DOMAIN = "[INSERT DOMAIN HERE]" # example: "http://localhost"
 ```
 
+### Get dependencies:
+
+```bash
+go mod download
+```
+
 ### Compile TrueRandomShuffle:
 ```bash
 go build -o ./SpotifyTrueRandomShuffle.exe ./cmd/main/
