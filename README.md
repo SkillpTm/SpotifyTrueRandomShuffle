@@ -1,5 +1,5 @@
 ## TrueRandomShuffle:
-Spotify's shuffle is not random, they use an algorithm based on your listening behaviour. TrueRandomShuffle creates an hidden playlist, which it uses to randomoize your queue. It's completely frictionless, just press shuffle play on your playlist and let TrueRandomShuffle do the rest.
+Spotify's shuffle is not random, they use an algorithm based on your listening behaviour. TrueRandomShuffle creates a hidden playlist, which it uses to randomoize your queue. It's completely frictionless, just press shuffle play on your playlist and let TrueRandomShuffle do the rest.
 
 ## Usage:
 Turing on shuffle (not smart shuffle) also turns on TrueRandomShuffle, which means you'll be redirected to a hidden playlist. This playlist shouldn't be modififed, you can skip (even multiple songs) as usual.
