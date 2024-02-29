@@ -104,8 +104,8 @@ func (player *Player) validateTempPlaylist() error {
 	tempPlaylistURI := tempPlaylistMap["uri"].(string)
 
 	// did we get all temp playlist values from the json?
-	if (player.tempPlaylistHREF != "" &&
-		player.tempPlaylistURI != "") {
+	if (tempPlaylistHREF != "" &&
+		tempPlaylistURI != "") {
 		player.tempPlaylistHREF = tempPlaylistHREF
 		player.tempPlaylistURI = tempPlaylistURI
 		return nil
@@ -156,6 +156,8 @@ func (player *Player) validateTempPlaylistTracks() error {
 
 // createTempPlaylist creates the temp playlist needed for the main loop and sets temp playlist values to the player.
 func (player *Player) createTempPlaylist() error {
+	createPlaylistHeaders := api.UserToken.GetAccessTokenHeader()
+	createPlaylistHeaders["Content-Type"] = "application/json"
 
 	bodyData := map[string]interface{}{
 		"name": "TrueRandomShuffle",
@@ -163,7 +165,7 @@ func (player *Player) createTempPlaylist() error {
 		"public": false,
 	}
 
-	createPlaylistResponse, err := util.MakeHTTPRequest("POST", baseURL + createPlaylistExtension, api.UserToken.GetAccessTokenHeader(), nil, bodyData)
+	createPlaylistResponse, err := util.MakeHTTPRequest("POST", baseURL + createPlaylistExtension, createPlaylistHeaders, nil, bodyData)
 	if err != nil {
 		return errors.New("couldn't POST request create temp playlist: " + err.Error())
 	}
@@ -288,7 +290,7 @@ func (player *Player) setContextLength() error {
 // playTempPlaylist starts playing our temp playlista nd turns shuffle on it off
 func (player *Player) playTempPlaylist() error {
 	startPlaybackHeaders := api.UserToken.GetAccessTokenHeader()
-	startPlaybackHeaders["Content-Type:"] = "application/json"
+	startPlaybackHeaders["Content-Type"] = "application/json"
 
 	startPlaybackData := map[string]interface{}{"context_uri" : player.tempPlaylistURI}
 
@@ -300,7 +302,7 @@ func (player *Player) playTempPlaylist() error {
 	// turn of shuffle for the temp playlist
 	_, err = util.MakeHTTPRequest("PUT", baseURL + tooglePlaybackShuffleExtension + "?state=false", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if (err != nil) {
-		return errors.New("couldn't PUT request start playback: " + err.Error())
+		return errors.New("couldn't PUT request shuffle playback: " + err.Error())
 	}
 
 	return nil
