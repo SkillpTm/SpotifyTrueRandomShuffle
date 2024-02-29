@@ -169,7 +169,7 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 
 	bodyData := map[string]interface{}{
 		"name": "TrueRandomShuffle",
-		"description": "DON'T ADD ANYTHING to this playlits. This playlist was automatically create by SpotifyTrueRandomShuffle. You may remove it from your library.",
+		"description": "DON'T ADD ANYTHING to this playlist. This playlist was automatically create by SpotifyTrueRandomShuffle. You may remove it from your library.",
 		"public": false,
 	}
 
