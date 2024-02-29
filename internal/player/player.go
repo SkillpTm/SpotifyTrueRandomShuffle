@@ -35,6 +35,7 @@ type Player struct {
 
 
 
+// loadPlaybackOnPlayer receives the response from the API call for playback State and loads it onto the player
 func (player *Player) loadPlaybackOnPlayer(playbackResponse map[string]interface{}) {
 	// add all relevant values to the player
 	player.currentlyPlayingType = playbackResponse["currently_playing_type"].(string)
@@ -54,24 +55,29 @@ func (player *Player) loadPlaybackOnPlayer(playbackResponse map[string]interface
 
 
 
-// playbackChecks returns true if any of it's checks failed
-func (player *Player) playbackChecks(currentlyPlayingTempPlaylist bool) bool {
-	// depending on if we're listening to the temp playlist it's ok if shuffle is turned off
-	var shuffleTest bool
-	if (currentlyPlayingTempPlaylist) {
-		shuffleTest = false
-	} else {
-		shuffleTest = !player.shuffleState
+// shuffleCheck makes sure shuffle is turned one
+func (player *Player) shuffleCheck(playbackContextURI string) bool {
+	// if we're playing the temp playlist the shuffle state doesn't matter
+	if playbackContextURI == player.tempPlaylistURI {
+		return false
 	}
 
-	return	!player.isPlaying ||						// isn't playing something right now
-			player.isPrivateSession ||					// is in a private session
-			player.currentlyPlayingType != "track" ||	// isn't listening to a track
-			player.repeatState == "track" ||			// does have repeat turned on for this track
-			shuffleTest ||								// hasn't turned on shuffle
-			player.smartShuffle ||						// has turned on smart shuffle
-			player.contextType == "show" ||				// context is a show
-			player.contextType == "artist"				// context is an artist
+	// otherwise return the actual shuffle state
+	return player.shuffleState
+}
+
+
+
+// playbackChecks makes sure all remaing factors pass
+func (player *Player) playbackChecks() bool {
+	// the playback response has to pass all of these checks
+	return	player.isPlaying &&							// is the user playing something right now
+			!player.isPrivateSession &&					// is in a private session
+			player.currentlyPlayingType == "track" &&	// is listening to a track
+			player.repeatState != "track" &&			// doesn't have repeat on a track turned on
+			!player.smartShuffle &&						// has smart shuffle turned off
+			player.contextType != "show" &&				// the context can't be a show
+			player.contextType != "artist"				// the context can't be an artist
 }
 
 
@@ -79,8 +85,7 @@ func (player *Player) playbackChecks(currentlyPlayingTempPlaylist bool) bool {
 // validateTempPlaylist ensures that we have set the href, id and uri on the player. If needed it will also create and populate the playlist
 func (player *Player) validateTempPlaylist() error {
 	// do we already have a temp playlist on the player
-	if (player.tempPlaylistHREF != "" &&
-		player.tempPlaylistURI != "") {
+	if (player.tempPlaylistURI != "") {
 		// check if the temp plalyist has the required amount of tracks in it
 		err := player.validateTempPlaylistTracks()
 		if err != nil {
@@ -100,8 +105,7 @@ func (player *Player) validateTempPlaylist() error {
 	tempPlaylistURI := tempPlaylistMap["uri"].(string)
 
 	// did we get all temp playlist values from the json?
-	if (tempPlaylistHREF != "" &&
-		tempPlaylistURI != "") {
+	if (tempPlaylistURI != "") {
 		player.tempPlaylistHREF = tempPlaylistHREF
 		player.tempPlaylistURI = tempPlaylistURI
 
