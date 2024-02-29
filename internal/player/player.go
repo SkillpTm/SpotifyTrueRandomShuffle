@@ -1,4 +1,4 @@
-// Package player ...
+// Package player is responsible for handling the main loop of the program. It executes all functionallity relevant to make TrueRandomShuffle work.
 package player
 
 import (
@@ -15,37 +15,36 @@ import (
 type Player struct {
 	// general values
 	userCountry string
-	userID string
+	userID      string
 
 	// check values
 	currentlyPlayingType string
-	isPlaying bool
-	isPrivateSession bool
-	repeatState string
-	shuffleState bool
-	smartShuffle bool
+	isPlaying            bool
+	isPrivateSession     bool
+	repeatState          string
+	shuffleState         bool
+	smartShuffle         bool
 
 	// context values
 	contextHREF string
 	contextType string
-	contextURI string
+	contextURI  string
 
 	contextLength int
 
 	// shuffle playlist values
-	shufflePlaylistHREF string
-	shufflePlaylistLength int
+	shufflePlaylistHREF      string
+	shufflePlaylistLength    int
 	shufflePlaylistTrackURIs []string
-	shufflePlaylistURI string
+	shufflePlaylistURI       string
 }
-
 
 // newPlayer creates and returns a player with the userID and userCountry set
 func newPlayer() (*Player, error) {
 	player := Player{}
 
 	// Get the user's profile for their country
-	userProfile, err := util.MakeHTTPRequest("GET", baseURL + userProfileExtension, api.UserToken.GetAccessTokenHeader(), nil, nil)
+	userProfile, err := util.MakeHTTPRequest("GET", baseURL+userProfileExtension, api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return &player, fmt.Errorf("couldn't GET user profile; %s", err.Error())
 	}
@@ -57,8 +56,6 @@ func newPlayer() (*Player, error) {
 	return &player, nil
 }
 
-
-
 // getShufflePlaylist gets the href and uri of the shuffle playlist. If it needs to it will also create the playlist.
 func (player *Player) setShufflePlaylist() error {
 	// get the shuffle playlist values from the JSON
@@ -68,7 +65,7 @@ func (player *Player) setShufflePlaylist() error {
 	}
 
 	// did we get temp a playlist from the json?
-	if (shufflePlaylistMap["uri"].(string) != "") {
+	if shufflePlaylistMap["uri"].(string) != "" {
 		player.shufflePlaylistHREF = shufflePlaylistMap["href"].(string)
 		player.shufflePlaylistURI = shufflePlaylistMap["uri"].(string)
 
@@ -92,13 +89,11 @@ func (player *Player) setShufflePlaylist() error {
 	return nil
 }
 
-
-
 // clearShufflePlaylist ensours that on spotify's end the shuffle playlist is empty
 func (player *Player) clearShufflePlaylist() error {
 	var trackURIs []string
 
-	if (len(player.shufflePlaylistTrackURIs) > 0) {
+	if len(player.shufflePlaylistTrackURIs) > 0 {
 		trackURIs = player.shufflePlaylistTrackURIs
 		// maybe reset palyer var here??
 	} else {
@@ -110,24 +105,23 @@ func (player *Player) clearShufflePlaylist() error {
 	}
 
 	// if we don't have any uris now the shuffle playlist is already empty
-	if (len(trackURIs) == 0) {
+	if len(trackURIs) == 0 {
 		return nil
 	}
-
 
 	// now clear the shuffle Playlist
 	headers := api.UserToken.GetAccessTokenHeader()
 	headers["Content-Type"] = "application/json"
 
-	bodyData := map[string]interface{}{"tracks" : []map[string]string{}}
+	bodyData := map[string]interface{}{"tracks": []map[string]string{}}
 
 	// populate body
 	for _, uri := range trackURIs {
-		bodyData["tracks"] = append(bodyData["tracks"].([]map[string]string), map[string]string{"uri" : uri,})
+		bodyData["tracks"] = append(bodyData["tracks"].([]map[string]string), map[string]string{"uri": uri})
 	}
 
 	// make call to remove all tracks of the shuffle playlist
-	_, err := util.MakeHTTPRequest("DELETE", player.shufflePlaylistHREF + "/tracks", headers, nil, bodyData)
+	_, err := util.MakeHTTPRequest("DELETE", player.shufflePlaylistHREF+"/tracks", headers, nil, bodyData)
 	if err != nil {
 		return fmt.Errorf("couldn't DELETE request all tracks from the temp playlist; %s", err.Error())
 	}
@@ -135,15 +129,13 @@ func (player *Player) clearShufflePlaylist() error {
 	return nil
 }
 
-
-
 // getShufflePlaylistTrackURIs makes a call to Spotify and returns a slice of the URIs currently in the shuffle playlist
 func (player *Player) getShufflePlaylistTrackURIs() ([]string, error) {
 	// define the storage var early
 	var trackURIs []string
 
 	// get current shuffle playlist tracks
-	tracksResponse, err := util.MakeHTTPRequest("GET", player.shufflePlaylistHREF + "/tracks",  api.UserToken.GetAccessTokenHeader(), nil, nil)
+	tracksResponse, err := util.MakeHTTPRequest("GET", player.shufflePlaylistHREF+"/tracks", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return trackURIs, fmt.Errorf("couldn't GET request random track from context; %s", err.Error())
 	}
@@ -156,8 +148,6 @@ func (player *Player) getShufflePlaylistTrackURIs() ([]string, error) {
 	return trackURIs, nil
 }
 
-
-
 // createShufflePlaylist makes the shuffle playlist on spotify and returns it's href and uri
 func (player *Player) createShufflePlaylist() (string, string, error) {
 	// declare vars for storage early
@@ -168,12 +158,12 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 	headers["Content-Type"] = "application/json"
 
 	bodyData := map[string]interface{}{
-		"name": "TrueRandomShuffle",
+		"name":        "TrueRandomShuffle",
 		"description": "DON'T ADD ANYTHING to this playlist. This playlist was automatically created by SpotifyTrueRandomShuffle. You may remove it from your library.",
-		"public": false,
+		"public":      false,
 	}
 
-	createPlaylistResponse, err := util.MakeHTTPRequest("POST",  fmt.Sprintf("%susers/%s/playlists", baseURL, player.userID), headers, nil, bodyData)
+	createPlaylistResponse, err := util.MakeHTTPRequest("POST", fmt.Sprintf("%susers/%s/playlists", baseURL, player.userID), headers, nil, bodyData)
 	if err != nil {
 		return shufflePlaylisthref, shufflePlaylisturi, fmt.Errorf("couldn't POST request create temp playlist; %s", err.Error())
 	}
@@ -183,17 +173,17 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 	shufflePlaylisturi = createPlaylistResponse["uri"].(string)
 
 	// immeaditly remove the shuffle playlist from the user's library
-	_, err = util.MakeHTTPRequest("DELETE",  shufflePlaylisthref + "/followers", api.UserToken.GetAccessTokenHeader(), nil, nil)
+	_, err = util.MakeHTTPRequest("DELETE", shufflePlaylisthref+"/followers", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return shufflePlaylisthref, shufflePlaylisturi, fmt.Errorf("couldn't POST request create temp playlist; %s", err.Error())
 	}
 
 	// write to the shuffle playlist JSON for use after a restart
 	err = util.WriteJSONData(
-		util.AppConfig.ShufflePlaylistPath, 
+		util.AppConfig.ShufflePlaylistPath,
 		map[string]interface{}{
-			"href" : shufflePlaylisthref,
-			"uri" : shufflePlaylisturi,
+			"href": shufflePlaylisthref,
+			"uri":  shufflePlaylisturi,
 		},
 	)
 	if err != nil {
@@ -203,12 +193,10 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 	return shufflePlaylisthref, shufflePlaylisturi, nil
 }
 
-
-
 // runChecks ensures that all check and context values are up to date and valid || false is an error
 func (player *Player) runChecks(playbackResponse *map[string]interface{}) (bool, error) {
 	// check if there is a playback state
-	if (len(*playbackResponse) == 0) {
+	if len(*playbackResponse) == 0 {
 		return false, nil
 	}
 
@@ -221,7 +209,7 @@ func (player *Player) runChecks(playbackResponse *map[string]interface{}) (bool,
 	}
 
 	// check if a context exists (i.e. if the user is listening to a song outside of an album/playlist)
-	if ((*playbackResponse)["context"] == nil) {
+	if (*playbackResponse)["context"] == nil {
 		return false, nil
 	}
 
@@ -231,7 +219,7 @@ func (player *Player) runChecks(playbackResponse *map[string]interface{}) (bool,
 	}
 
 	// if thex context only has 1 track fail
-	if (player.contextLength == 1) {
+	if player.contextLength == 1 {
 		return false, nil
 	}
 
@@ -241,8 +229,6 @@ func (player *Player) runChecks(playbackResponse *map[string]interface{}) (bool,
 
 	return true, nil
 }
-
-
 
 // loadPlaybackOnPlayer receives the response from the API call for playback State and loads it onto the player
 func (player *Player) setCheckValues(playbackResponse *map[string]interface{}) {
@@ -255,20 +241,16 @@ func (player *Player) setCheckValues(playbackResponse *map[string]interface{}) {
 	player.smartShuffle = (*playbackResponse)["smart_shuffle"].(bool)
 }
 
-
-
 // playbackChecks makes sure all remaining factors pass || false is an error
 func (player *Player) playbackChecks() bool {
 	// the playback response has to pass all of these checks
-	return	player.isPlaying &&							// is the user playing something right now
-			!player.isPrivateSession &&					// is in a private session
-			player.currentlyPlayingType == "track" &&	// is listening to a track
-			player.repeatState != "track" &&			// doesn't have repeat on a track turned on
-			player.contextType != "show" &&				// the context can't be a show
-			player.contextType != "artist"				// the context can't be an artist
+	return player.isPlaying && // is the user playing something right now
+		!player.isPrivateSession && // is in a private session
+		player.currentlyPlayingType == "track" && // is listening to a track
+		player.repeatState != "track" && // doesn't have repeat on a track turned on
+		player.contextType != "show" && // the context can't be a show
+		player.contextType != "artist" // the context can't be an artist
 }
-
-
 
 // updateContext ensures the context on the player is always up to date, by potentially reseting and updating the context and the shuffle playlist
 func (player *Player) updateContext(playbackResponse *map[string]interface{}) error {
@@ -277,7 +259,7 @@ func (player *Player) updateContext(playbackResponse *map[string]interface{}) er
 		return fmt.Errorf("couldn't clear context on player and reset shuffle playlist; %s", err.Error())
 	}
 	// if the context isn't empty it's up to date
-	if (player.contextURI != "") {
+	if player.contextURI != "" {
 		return nil
 	}
 
@@ -289,18 +271,16 @@ func (player *Player) updateContext(playbackResponse *map[string]interface{}) er
 	return nil
 }
 
-
-
 // clearContext returns a bool on if it cleared the context and emptied the shuffle playlist
 func (player *Player) clearContext(newContextURI string) error {
 	// if there is no context, don't clear it
-	if (player.contextURI == "") {
+	if player.contextURI == "" {
 		return nil
 	}
 
 	// check that the user is playing a context that isn't the shuffle playlist or the original context
-	if (newContextURI == player.shufflePlaylistURI ||
-		newContextURI == player.contextURI) {
+	if newContextURI == player.shufflePlaylistURI ||
+		newContextURI == player.contextURI {
 		return nil
 	}
 
@@ -319,12 +299,10 @@ func (player *Player) clearContext(newContextURI string) error {
 	return nil
 }
 
-
-
 // setContext only sets a new context if the user is listening to anything but the shuffle playlist
 func (player *Player) setContext(playbackResponse *map[string]interface{}) error {
 	// check if our context is a new album/playlist and not the shuffle playlist
-	if (player.shufflePlaylistURI == (*playbackResponse)["context"].(map[string]interface{})["uri"].(string)) {
+	if player.shufflePlaylistURI == (*playbackResponse)["context"].(map[string]interface{})["uri"].(string) {
 		return nil
 	}
 
@@ -340,7 +318,7 @@ func (player *Player) setContext(playbackResponse *map[string]interface{}) error
 	player.contextLength = length
 
 	// if the context length is bigger than our playlist size limit, limit the playlist length to the size
-	if (player.contextLength >= util.AppConfig.ShufflePlaylistSize) {
+	if player.contextLength >= util.AppConfig.ShufflePlaylistSize {
 		player.shufflePlaylistLength = util.AppConfig.ShufflePlaylistSize
 	} else {
 		player.shufflePlaylistLength = player.contextLength
@@ -348,9 +326,6 @@ func (player *Player) setContext(playbackResponse *map[string]interface{}) error
 
 	return nil
 }
-
-
-
 
 func (player *Player) getContextLength() (int, error) {
 	var length int
@@ -361,16 +336,14 @@ func (player *Player) getContextLength() (int, error) {
 	}
 
 	// depending on the context type the length is in another part of the JSON
-	if (player.contextType == "album") {
+	if player.contextType == "album" {
 		length = int(contextResponse["total_tracks"].(float64))
-	} else if (player.contextType == "playlist") {
+	} else if player.contextType == "playlist" {
 		length = int(contextResponse["tracks"].(map[string]interface{})["total"].(float64))
 	}
 
 	return length, nil
 }
-
-
 
 // shuffleCheck makes sure shuffle is turned one || false is an error
 func (player *Player) shuffleCheck(playbackContextURI string) bool {
@@ -383,37 +356,35 @@ func (player *Player) shuffleCheck(playbackContextURI string) bool {
 	return player.shuffleState && !player.smartShuffle
 }
 
-
-
 // removeFinishedTracks removes all tracks in the playlist before the current one
 func (player *Player) removeFinishedTracks(currentTrackURI string) error {
 	// check if a song has been finished/skipped, while ignoring manually queued songs
 	for index, shuffleTrackURI := range player.shufflePlaylistTrackURIs {
 		// check where the currently playing track is in the shuffle playlist
-		if (currentTrackURI != shuffleTrackURI) {
+		if currentTrackURI != shuffleTrackURI {
 			continue
 		}
 
 		// if the track is the first track we don't need to remove anything
-		if (index == 0) {
+		if index == 0 {
 			break
 		}
-		
+
 		headers := api.UserToken.GetAccessTokenHeader()
 		headers["Content-Type"] = "application/json"
 
-		bodyData := map[string]interface{}{"tracks" : []map[string]string{}}
+		bodyData := map[string]interface{}{"tracks": []map[string]string{}}
 
 		// populate body
 		for _, uri := range player.shufflePlaylistTrackURIs {
-			if (uri == shuffleTrackURI) {
+			if uri == shuffleTrackURI {
 				break
 			}
 
-			bodyData["tracks"] = append(bodyData["tracks"].([]map[string]string), map[string]string{"uri" : uri,})
+			bodyData["tracks"] = append(bodyData["tracks"].([]map[string]string), map[string]string{"uri": uri})
 		}
 
-		_, err := util.MakeHTTPRequest("DELETE", player.shufflePlaylistHREF + "/tracks", headers, nil, bodyData)
+		_, err := util.MakeHTTPRequest("DELETE", player.shufflePlaylistHREF+"/tracks", headers, nil, bodyData)
 		if err != nil {
 			return fmt.Errorf("couldn't DELETE request remove playlist items; %s", err.Error())
 		}
@@ -427,8 +398,6 @@ func (player *Player) removeFinishedTracks(currentTrackURI string) error {
 	return nil
 }
 
-
-
 // fillShufflePlaylist fills the shuffle playlist up to the size of shufflePlaylistLength
 func (player *Player) fillShufflePlaylist() error {
 	// get the current tracks in the playlist
@@ -438,13 +407,13 @@ func (player *Player) fillShufflePlaylist() error {
 	}
 
 	// check if we have a miss match between our var and spotify
-	if (len(currentShuffleTracks) != len(player.shufflePlaylistTrackURIs)) {
+	if len(currentShuffleTracks) != len(player.shufflePlaylistTrackURIs) {
 		// set our var to spotify's values
 		player.shufflePlaylistTrackURIs = currentShuffleTracks
 	}
 
 	// if our shuffle playlist is already full just return
-	if (player.shufflePlaylistLength - len(player.shufflePlaylistTrackURIs) == 0) {
+	if player.shufflePlaylistLength-len(player.shufflePlaylistTrackURIs) == 0 {
 		return nil
 	}
 
@@ -453,7 +422,7 @@ func (player *Player) fillShufflePlaylist() error {
 	// the slice stores only the URIs to be added to the shuffle playlist
 	var toBeAddedTracks []string
 
-	if (len(player.shufflePlaylistTrackURIs) > 0) {
+	if len(player.shufflePlaylistTrackURIs) > 0 {
 		for _, uri := range player.shufflePlaylistTrackURIs {
 			currentTracks[uri] = true // the value we insert her doesn't matter, we just need a placeholder for the check later
 		}
@@ -463,7 +432,7 @@ func (player *Player) fillShufflePlaylist() error {
 	for {
 		randomTrackURL := fmt.Sprintf("%s/tracks?market=%s&limit=%d&offset=%d", player.contextHREF, player.userCountry, 20, rand.Intn(player.contextLength))
 
-		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL,  api.UserToken.GetAccessTokenHeader(), nil, nil)
+		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL, api.UserToken.GetAccessTokenHeader(), nil, nil)
 		if err != nil {
 			return fmt.Errorf("couldn't GET request random track from context; %s", err.Error())
 		}
@@ -474,13 +443,13 @@ func (player *Player) fillShufflePlaylist() error {
 		// loop over the response tracks
 		for _, item := range randomTrackResponse["items"].([]interface{}) {
 			// depending on if the context is an album or a playlist the URI is in a different position in the JSON
-			if (player.contextType == "album") {
+			if player.contextType == "album" {
 				currentTrack = item.(map[string]interface{})["uri"].(string)
-			} else if (player.contextType == "playlist") {
+			} else if player.contextType == "playlist" {
 				currentTrack = item.(map[string]interface{})["track"].(map[string]interface{})["uri"].(string)
 			}
 
-			if (currentTracks[currentTrack]) {
+			if currentTracks[currentTrack] {
 				continue
 			}
 
@@ -488,14 +457,14 @@ func (player *Player) fillShufflePlaylist() error {
 			break
 		}
 
-		if (randomTrackURI == "") {
+		if randomTrackURI == "" {
 			continue
 		}
 
 		currentTracks[randomTrackURI] = true
 		toBeAddedTracks = append(toBeAddedTracks, randomTrackURI)
 
-		if (len(currentTracks) == player.shufflePlaylistLength) {
+		if len(currentTracks) == player.shufflePlaylistLength {
 			break
 		}
 	}
@@ -505,7 +474,7 @@ func (player *Player) fillShufflePlaylist() error {
 	}
 
 	// finally add all the URIs to the shuffle playlist
-	_, err = util.MakeHTTPRequest( "POST", player.shufflePlaylistHREF + "/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
+	_, err = util.MakeHTTPRequest("POST", player.shufflePlaylistHREF+"/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
 	if err != nil {
 		return fmt.Errorf("couldn't POST request add in new items to temp playlist; %s", err.Error())
 	}
@@ -515,27 +484,24 @@ func (player *Player) fillShufflePlaylist() error {
 	return nil
 }
 
-
-
-
 func (player *Player) startShufflePlaylist() error {
 	headers := api.UserToken.GetAccessTokenHeader()
 	headers["Content-Type"] = "application/json"
 
 	bodyData := map[string]interface{}{
-		"context_uri" : player.shufflePlaylistURI,
-		"offset" : map[string]int{
-			"position" : 0,
+		"context_uri": player.shufflePlaylistURI,
+		"offset": map[string]int{
+			"position": 0,
 		},
 	}
 
-	_, err := util.MakeHTTPRequest("PUT", baseURL + startPlaybackExtension, headers, nil, bodyData)
+	_, err := util.MakeHTTPRequest("PUT", baseURL+startPlaybackExtension, headers, nil, bodyData)
 	if err != nil {
 		return fmt.Errorf("couldn't PUT request start playback; %s", err.Error())
 	}
 
 	// turn of shuffle for the temp playlist
-	_, err = util.MakeHTTPRequest("PUT", baseURL + tooglePlaybackShuffleExtension + "?state=false", api.UserToken.GetAccessTokenHeader(), nil, nil)
+	_, err = util.MakeHTTPRequest("PUT", baseURL+tooglePlaybackShuffleExtension+"?state=false", api.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return fmt.Errorf("couldn't PUT request shuffle playback; %s", err.Error())
 	}

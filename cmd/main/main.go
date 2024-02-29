@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Errorf("couldn't setup config; %s", err.Error()))
 	}
-	
+
 	api.AuthUser()
 	err = player.Start()
 	if err != nil {

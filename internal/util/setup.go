@@ -1,4 +1,4 @@
-// Package util ...
+// Package util carries many smaller utility functions that get reused over the whole project.
 package util
 
 // <---------------------------------------------------------------------------------------------------->
@@ -16,27 +16,23 @@ var AppConfig Config
 
 // <---------------------------------------------------------------------------------------------------->
 
-
-
 // Config is a type to hold our config data
 type Config struct {
-	CallbackPath string
-	CallbackPort string
-	envPath string
-	errorLogPath string
-	LoopRefreshTime float64
+	CallbackPath         string
+	CallbackPort         string
+	envPath              string
+	errorLogPath         string
+	LoopRefreshTime      float64
 	RequestAuthEveryTime bool
-	ShufflePlaylistPath string
-	ShufflePlaylistSize int
+	ShufflePlaylistPath  string
+	ShufflePlaylistSize  int
 
-	ClientID string
-	ClientSecret string
+	ClientID       string
+	ClientSecret   string
 	RedirectDomain string
 
 	RedirectURI string
 }
-
-
 
 // Setup loads our config and envs onto AppConfig
 func Setup() error {
@@ -53,8 +49,6 @@ func Setup() error {
 	return nil
 }
 
-
-
 // importConfig loads ./configs/config onto AppConfig
 func importConfig() error {
 
@@ -65,20 +59,18 @@ func importConfig() error {
 
 	// set configData to exportable var
 	AppConfig = Config{
-		CallbackPath: configData["callbackPath"].(string),
-		CallbackPort: configData["callbackPort"].(string),
-		envPath: configData["paths"].(map[string]interface{})["env"].(string),
-		errorLogPath: configData["paths"].(map[string]interface{})["errorLog"].(string),
-		LoopRefreshTime: configData["loopRefreshTime"].(float64),
+		CallbackPath:         configData["callbackPath"].(string),
+		CallbackPort:         configData["callbackPort"].(string),
+		envPath:              configData["paths"].(map[string]interface{})["env"].(string),
+		errorLogPath:         configData["paths"].(map[string]interface{})["errorLog"].(string),
+		LoopRefreshTime:      configData["loopRefreshTime"].(float64),
 		RequestAuthEveryTime: configData["requestAuthEveryTime"].(bool),
-		ShufflePlaylistPath: configData["paths"].(map[string]interface{})["shufflePlaylist"].(string),
-		ShufflePlaylistSize : int(configData["shufflePlaylistSize"].(float64)),
+		ShufflePlaylistPath:  configData["paths"].(map[string]interface{})["shufflePlaylist"].(string),
+		ShufflePlaylistSize:  int(configData["shufflePlaylistSize"].(float64)),
 	}
 
 	return nil
 }
-
-
 
 // loadEnv imports the envs for the spotify API from the .env file on AppConfig
 func loadEnv() error {

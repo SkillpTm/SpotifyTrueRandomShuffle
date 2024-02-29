@@ -1,4 +1,4 @@
-// Package util ...
+// Package util carries many smaller utility functions that get reused over the whole project.
 package util
 
 // <---------------------------------------------------------------------------------------------------->
@@ -27,15 +27,13 @@ func LogError(logErr error) {
 		log.Fatal(fmt.Errorf("couldn't open log file; %s", err.Error()))
 	}
 	defer logFile.Close()
-	
+
 	// write to log file
 	fmt.Fprintf(logFile, "%v: %v\n", time.Now(), logErr)
 
 	// exit the program
 	log.Fatal(logErr)
 }
-
-
 
 // GenerateRandomString generates a random string of Base64 characters
 func GenerateRandomString(length int) string {
@@ -50,8 +48,6 @@ func GenerateRandomString(length int) string {
 
 	return base64.StdEncoding.EncodeToString(bytes)
 }
-
-
 
 // GetJSONData will provide a map with JSON data of the prvoided file
 func GetJSONData(filePath string) (map[string]interface{}, error) {
@@ -79,8 +75,6 @@ func GetJSONData(filePath string) (map[string]interface{}, error) {
 	return jsonData, nil
 }
 
-
-
 // WriteJSONData will take a map with JSON data and the file path and write to that file
 func WriteJSONData(filePath string, inputData map[string]interface{}) error {
 	// open JSON file in write-only and truncate mode
@@ -90,22 +84,20 @@ func WriteJSONData(filePath string, inputData map[string]interface{}) error {
 	}
 	defer jsonFile.Close()
 
-    // marshal the map into JSON
-    jsonData, err := json.MarshalIndent(inputData, "", "	")
-    if err != nil {
-        return fmt.Errorf("couldn't marshal JSON data; %s", err.Error())
-    }
+	// marshal the map into JSON
+	jsonData, err := json.MarshalIndent(inputData, "", "	")
+	if err != nil {
+		return fmt.Errorf("couldn't marshal JSON data; %s", err.Error())
+	}
 
-    // write jsonData to file
-    _, err = jsonFile.Write(jsonData)
-    if err != nil {
-        return fmt.Errorf("couldn't write JSON data to JSON file (%s); %s", filePath, err.Error())
-    }
+	// write jsonData to file
+	_, err = jsonFile.Write(jsonData)
+	if err != nil {
+		return fmt.Errorf("couldn't write JSON data to JSON file (%s); %s", filePath, err.Error())
+	}
 
 	return nil
 }
-
-
 
 // MakeHTTPRequest makes a GET/POST/DELETE/PUT request with headers, parameters or plain text body data and returns the JSON format response as a map
 func MakeHTTPRequest(method string, requestURL string, headers map[string]string, parameters map[string]string, bodyData map[string]interface{}) (map[string]interface{}, error) {
@@ -114,17 +106,17 @@ func MakeHTTPRequest(method string, requestURL string, headers map[string]string
 	var requestBody io.Reader = nil
 
 	// check if the method provided is valid
-	if (method != "GET" &&
+	if method != "GET" &&
 		method != "POST" &&
 		method != "DELETE" &&
-		method != "PUT") {
+		method != "PUT" {
 		return responseMap, fmt.Errorf("'%s' isn't a supported HTTP request method for this function", method)
 	}
 
 	httpClient := &http.Client{}
 
 	// add parameters to requestBody
-	if (len(parameters) != 0) {
+	if len(parameters) != 0 {
 		requestParameters := url.Values{}
 
 		for key, value := range parameters {
@@ -133,8 +125,8 @@ func MakeHTTPRequest(method string, requestURL string, headers map[string]string
 
 		requestBody = strings.NewReader(requestParameters.Encode())
 
-	// add bodyData to requestBody
-	} else if (len(bodyData) != 0) {
+		// add bodyData to requestBody
+	} else if len(bodyData) != 0 {
 		jsonBodyData, err := json.Marshal(bodyData)
 		if err != nil {
 			return responseMap, fmt.Errorf("couldn't marshal body data for %s request; %s", method, err.Error())
@@ -168,7 +160,7 @@ func MakeHTTPRequest(method string, requestURL string, headers map[string]string
 	}
 
 	// convert response to map, the response can be empty and still valid
-	if (len(responseBody) > 0) {
+	if len(responseBody) > 0 {
 		err = json.Unmarshal(responseBody, &responseMap)
 		if err != nil {
 			return responseMap, fmt.Errorf("couldn't unmarshal JSON %s request response body; %s", method, err.Error())
@@ -177,7 +169,7 @@ func MakeHTTPRequest(method string, requestURL string, headers map[string]string
 
 	// check if we got an error code as a response
 	_, notOK := responseMap["error"]
-	if (notOK) {
+	if notOK {
 		return responseMap, fmt.Errorf("spotify responded with an error %d to %s request; %s", int(responseMap["error"].(map[string]interface{})["status"].(float64)), method, responseMap["error"].(map[string]interface{})["message"].(string))
 	}
 

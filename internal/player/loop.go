@@ -1,4 +1,4 @@
-// Package player ...
+// Package player is responsible for handling the main loop of the program. It executes all functionallity relevant to make TrueRandomShuffle work.
 package player
 
 // <---------------------------------------------------------------------------------------------------->
@@ -14,17 +14,15 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 const (
-	baseURL = "https://api.spotify.com/v1/"
-	getPlaylistExtension = "playlists/"
-	playbackStateExtension = "me/player"
-	startPlaybackExtension = "me/player/play"
+	baseURL                        = "https://api.spotify.com/v1/"
+	getPlaylistExtension           = "playlists/"
+	playbackStateExtension         = "me/player"
+	startPlaybackExtension         = "me/player/play"
 	tooglePlaybackShuffleExtension = "me/player/shuffle"
-	userProfileExtension = "me"
+	userProfileExtension           = "me"
 )
 
 // <---------------------------------------------------------------------------------------------------->
-
-
 
 // Start is our main loop which repeats infinitely and provides with all parts needed for TrueRandomShuffle
 func Start() error {
@@ -46,16 +44,16 @@ func Start() error {
 		time.Sleep(time.Duration(int64(util.AppConfig.LoopRefreshTime * float64(time.Second))))
 
 		// get the playback state for tests and context
-        playbackResponse, err := util.MakeHTTPRequest("GET", baseURL + playbackStateExtension, api.UserToken.GetAccessTokenHeader(), nil, nil)
-        if err != nil {
-            return fmt.Errorf("couldn't GET request playback state; %s", err.Error())
-        }
+		playbackResponse, err := util.MakeHTTPRequest("GET", baseURL+playbackStateExtension, api.UserToken.GetAccessTokenHeader(), nil, nil)
+		if err != nil {
+			return fmt.Errorf("couldn't GET request playback state; %s", err.Error())
+		}
 
 		// run general checks
 		passed, err := userPlayer.runChecks(&playbackResponse)
-        if err != nil {
-            return fmt.Errorf("couldn't run all checks; %s", err.Error())
-        }
+		if err != nil {
+			return fmt.Errorf("couldn't run all checks; %s", err.Error())
+		}
 
 		if !passed {
 			continue
@@ -74,7 +72,7 @@ func Start() error {
 		}
 
 		// check if we're listening to the temp playlist right now
-		if (playbackResponse["context"].(map[string]interface{})["uri"].(string) == userPlayer.shufflePlaylistURI) {
+		if playbackResponse["context"].(map[string]interface{})["uri"].(string) == userPlayer.shufflePlaylistURI {
 			continue
 		}
 
