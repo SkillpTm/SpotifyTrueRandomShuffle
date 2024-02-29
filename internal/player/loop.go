@@ -26,7 +26,7 @@ const (
 
 
 
-// Start is our main loop which repeats infinitly and provides with all parts needed for TrueRandomShuffle
+// Start is our main loop which repeats infinitely and provides with all parts needed for TrueRandomShuffle
 func Start() error {
 	// make a new player
 	userPlayer, err := newPlayer()

@@ -82,7 +82,7 @@ func importConfig() error {
 
 // loadEnv imports the envs for the spotify API from the .env file on AppConfig
 func loadEnv() error {
-	// load envs into enviroment
+	// load envs into environment
 	err := godotenv.Load(AppConfig.envPath)
 	if err != nil {
 		return fmt.Errorf("couldn't load .env file; %s", err.Error())

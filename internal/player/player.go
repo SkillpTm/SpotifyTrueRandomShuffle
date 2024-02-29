@@ -72,7 +72,7 @@ func (player *Player) setShufflePlaylist() error {
 		player.shufflePlaylistHREF = shufflePlaylistMap["href"].(string)
 		player.shufflePlaylistURI = shufflePlaylistMap["uri"].(string)
 
-		// reset the temp playlist from a previous exectuion to avoid missmatching with our data
+		// reset the temp playlist from a previous execution to avoid missmatching with our data
 		err = player.clearShufflePlaylist()
 		if err != nil {
 			return fmt.Errorf("couldn't clear shuffle playlist; %s", err.Error())
@@ -257,7 +257,7 @@ func (player *Player) setCheckValues(playbackResponse *map[string]interface{}) {
 
 
 
-// playbackChecks makes sure all remaing factors pass || false is an error
+// playbackChecks makes sure all remaining factors pass || false is an error
 func (player *Player) playbackChecks() bool {
 	// the playback response has to pass all of these checks
 	return	player.isPlaying &&							// is the user playing something right now
@@ -431,7 +431,7 @@ func (player *Player) removeFinishedTracks(currentTrackURI string) error {
 
 // fillShufflePlaylist fills the shuffle playlist up to the size of shufflePlaylistLength
 func (player *Player) fillShufflePlaylist() error {
-	// get teh current tracks in the playlist
+	// get the current tracks in the playlist
 	currentShuffleTracks, err := player.getShufflePlaylistTrackURIs()
 	if err != nil {
 		return fmt.Errorf("couldn't get current shuffle tracks; %s", err.Error())
