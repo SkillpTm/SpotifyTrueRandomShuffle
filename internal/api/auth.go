@@ -18,7 +18,7 @@ import (
 const (
 	contentType = "application/x-www-form-urlencoded"
 	responseType = "code"
-	scopes = `user-read-playback-state%20user-read-currently-playing%20user-modify-playback-state%20user-read-private%20user-read-email%20playlist-read-private%20playlist-read-collaborative`
+	scopes = "user-read-playback-state%20user-modify-playback-state%20playlist-read-private%20playlist-read-collaborative%20playlist-modify-public%20playlist-modify-private%20user-read-private%20user-read-email"
 
 	authURL = "https://accounts.spotify.com/authorize?"
 	tokenURL = "https://accounts.spotify.com/api/token"
