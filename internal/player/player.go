@@ -59,12 +59,20 @@ func (player *Player) loadPlaybackOnPlayer(playbackResponse map[string]interface
 
 
 // playbackChecks returns true if any of it's checks failed
-func (player *Player) playbackChecks() bool {
+func (player *Player) playbackChecks(currentlyPlayingTempPlaylist bool) bool {
+	// depending on if we're listening to the temp playlist it's ok if shuffle is turned off
+	var shuffleTest bool
+	if (currentlyPlayingTempPlaylist) {
+		shuffleTest = false
+	} else {
+		shuffleTest = !player.shuffleState
+	}
+
 	return	!player.isPlaying ||						// isn't playing something right now
 			player.isPrivateSession ||					// is in a private session
 			player.currentlyPlayingType != "track" ||	// isn't listening to a track
 			player.repeatState == "track" ||			// does have repeat turned on for this track
-			!player.shuffleState ||						// hasn't turned on shuffle
+			shuffleTest ||								// hasn't turned on shuffle
 			player.smartShuffle ||						// has turned on smart shuffle
 			player.contextType == "show" ||				// context is a show
 			player.contextType == "artist"				// context is an artist
