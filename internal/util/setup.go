@@ -26,8 +26,8 @@ type Config struct {
 	errorLogPath string
 	LoopRefreshTime float64
 	RequestAuthEveryTime bool
-	TempPlaylistPath string
-	TempPlaylistSize int
+	ShufflePlaylistPath string
+	ShufflePlaylistSize int
 
 	ClientID string
 	ClientSecret string
@@ -71,8 +71,8 @@ func importConfig() error {
 		errorLogPath: configData["paths"].(map[string]interface{})["errorLog"].(string),
 		LoopRefreshTime: configData["loopRefreshTime"].(float64),
 		RequestAuthEveryTime: configData["requestAuthEveryTime"].(bool),
-		TempPlaylistPath: configData["paths"].(map[string]interface{})["tempPlaylist"].(string),
-		TempPlaylistSize : int(configData["tempPlaylistSize"].(float64)),
+		ShufflePlaylistPath: configData["paths"].(map[string]interface{})["shufflePlaylist"].(string),
+		ShufflePlaylistSize : int(configData["shufflePlaylistSize"].(float64)),
 	}
 
 	return nil

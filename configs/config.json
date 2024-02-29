@@ -5,8 +5,8 @@
     "paths" : {
         "env" : "./.env",
         "errorLog" : "./logs/error.log",
-        "tempPlaylist" : "./configs/tempPlaylist.json"
+        "shufflePlaylist" : "./configs/shufflePlaylist.json"
     },
     "requestAuthEveryTime" : true,
-    "tempPlaylistSize" : 10
+    "shufflePlaylistSize" : 10
 }

@@ -26,5 +26,3 @@ func main() {
 		util.LogError(fmt.Errorf("couldn't continue main loop; %s", err.Error()))
 	}
 }
-
-// TODO: update scopes
