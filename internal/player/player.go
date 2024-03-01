@@ -1,4 +1,4 @@
-// Package player is responsible for handling the main loop of the program. It executes all functionallity relevant to make TrueRandomShuffle work.
+// Package player is responsible for handling the main loop of the program. It executes all functionality relevant to make TrueRandomShuffle work.
 package player
 
 import (
