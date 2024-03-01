@@ -1,4 +1,4 @@
-## TrueRandomShuffle: [![Go Report Card](https://goreportcard.com/report/github.com/SkillpTm/SpotifyTrueRandomShuffle)](https://goreportcard.com/report/github.com/SkillpTm/SpotifyTrueRandomShuffle)
+## TrueRandomShuffle: [![Go Report Card](https://goreportcard.com/badge/github.com/SkillpTm/SpotifyTrueRandomShuffle)](https://goreportcard.com/report/github.com/SkillpTm/SpotifyTrueRandomShuffle)
 Spotify's shuffle is not random, they use an algorithm based on your listening behaviour. TrueRandomShuffle creates a hidden playlist, which it uses to randomoize your queue. It's completely frictionless, just press shuffle play on your playlist and let TrueRandomShuffle do the rest.
 
 ## Usage:
