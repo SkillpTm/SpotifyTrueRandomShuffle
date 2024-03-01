@@ -400,7 +400,7 @@ func (player *Player) removeFinishedTracks(currentTrackURI string) error {
 
 // fillShufflePlaylist fills the shuffle playlist up to the size of shufflePlaylistLength
 func (player *Player) fillShufflePlaylist() error {
-	// validate periodically that there is no missmatch between shufflePlaylistTrackURIs and the actualy tracks
+	// validate periodically that there is no missmatch between shufflePlaylistTrackURIs and the actually tracks
 	// this can only happen if the user manually removes a track from the playlist
 	// on default settings this should happen about every ~2min
 	if rand.Intn(player.shufflePlaylistLength*4) == 0 {
