@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/api"
+	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/auth"
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/util"
 )
 
@@ -44,7 +44,7 @@ func newPlayer() (*Player, error) {
 	player := Player{}
 
 	// Get the user's profile for their country
-	userProfile, err := util.MakeHTTPRequest("GET", baseURL+userProfileExtension, api.UserToken.GetAccessTokenHeader(), nil, nil)
+	userProfile, err := util.MakeHTTPRequest("GET", baseURL+userProfileExtension, auth.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return &player, fmt.Errorf("couldn't GET user profile; %s", err.Error())
 	}
@@ -110,7 +110,7 @@ func (player *Player) clearShufflePlaylist() error {
 	}
 
 	// now clear the shuffle Playlist
-	headers := api.UserToken.GetAccessTokenHeader()
+	headers := auth.UserToken.GetAccessTokenHeader()
 	headers["Content-Type"] = "application/json"
 
 	bodyData := map[string]interface{}{"tracks": []map[string]string{}}
@@ -135,7 +135,7 @@ func (player *Player) getShufflePlaylistTrackURIs() ([]string, error) {
 	var trackURIs []string
 
 	// get current shuffle playlist tracks
-	tracksResponse, err := util.MakeHTTPRequest("GET", player.shufflePlaylistHREF+"/tracks", api.UserToken.GetAccessTokenHeader(), nil, nil)
+	tracksResponse, err := util.MakeHTTPRequest("GET", player.shufflePlaylistHREF+"/tracks", auth.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return trackURIs, fmt.Errorf("couldn't GET request random track from context; %s", err.Error())
 	}
@@ -154,7 +154,7 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 	var shufflePlaylisthref string
 	var shufflePlaylisturi string
 
-	headers := api.UserToken.GetAccessTokenHeader()
+	headers := auth.UserToken.GetAccessTokenHeader()
 	headers["Content-Type"] = "application/json"
 
 	bodyData := map[string]interface{}{
@@ -173,7 +173,7 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 	shufflePlaylisturi = createPlaylistResponse["uri"].(string)
 
 	// immeaditly remove the shuffle playlist from the user's library
-	_, err = util.MakeHTTPRequest("DELETE", shufflePlaylisthref+"/followers", api.UserToken.GetAccessTokenHeader(), nil, nil)
+	_, err = util.MakeHTTPRequest("DELETE", shufflePlaylisthref+"/followers", auth.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return shufflePlaylisthref, shufflePlaylisturi, fmt.Errorf("couldn't POST request create temp playlist; %s", err.Error())
 	}
@@ -330,7 +330,7 @@ func (player *Player) setContext(playbackResponse *map[string]interface{}) error
 func (player *Player) getContextLength() (int, error) {
 	var length int
 
-	contextResponse, err := util.MakeHTTPRequest("GET", fmt.Sprintf("%s?market=%s", player.contextHREF, player.userCountry), api.UserToken.GetAccessTokenHeader(), nil, nil)
+	contextResponse, err := util.MakeHTTPRequest("GET", fmt.Sprintf("%s?market=%s", player.contextHREF, player.userCountry), auth.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return length, fmt.Errorf("couldn't GET request context; %s", err.Error())
 	}
@@ -370,7 +370,7 @@ func (player *Player) removeFinishedTracks(currentTrackURI string) error {
 			break
 		}
 
-		headers := api.UserToken.GetAccessTokenHeader()
+		headers := auth.UserToken.GetAccessTokenHeader()
 		headers["Content-Type"] = "application/json"
 
 		bodyData := map[string]interface{}{"tracks": []map[string]string{}}
@@ -437,7 +437,7 @@ func (player *Player) fillShufflePlaylist() error {
 	for {
 		randomTrackURL := fmt.Sprintf("%s/tracks?market=%s&limit=%d&offset=%d", player.contextHREF, player.userCountry, 20, rand.Intn(player.contextLength))
 
-		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL, api.UserToken.GetAccessTokenHeader(), nil, nil)
+		randomTrackResponse, err := util.MakeHTTPRequest("GET", randomTrackURL, auth.UserToken.GetAccessTokenHeader(), nil, nil)
 		if err != nil {
 			return fmt.Errorf("couldn't GET request random track from context; %s", err.Error())
 		}
@@ -479,7 +479,7 @@ func (player *Player) fillShufflePlaylist() error {
 	}
 
 	// finally add all the URIs to the shuffle playlist
-	_, err := util.MakeHTTPRequest("POST", player.shufflePlaylistHREF+"/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
+	_, err := util.MakeHTTPRequest("POST", player.shufflePlaylistHREF+"/tracks", auth.UserToken.GetAccessTokenHeader(), nil, bodyData)
 	if err != nil {
 		return fmt.Errorf("couldn't POST request add in new items to temp playlist; %s", err.Error())
 	}
@@ -490,7 +490,7 @@ func (player *Player) fillShufflePlaylist() error {
 }
 
 func (player *Player) startShufflePlaylist() error {
-	headers := api.UserToken.GetAccessTokenHeader()
+	headers := auth.UserToken.GetAccessTokenHeader()
 	headers["Content-Type"] = "application/json"
 
 	bodyData := map[string]interface{}{
@@ -506,7 +506,7 @@ func (player *Player) startShufflePlaylist() error {
 	}
 
 	// turn of shuffle for the temp playlist
-	_, err = util.MakeHTTPRequest("PUT", baseURL+tooglePlaybackShuffleExtension+"?state=false", api.UserToken.GetAccessTokenHeader(), nil, nil)
+	_, err = util.MakeHTTPRequest("PUT", baseURL+tooglePlaybackShuffleExtension+"?state=false", auth.UserToken.GetAccessTokenHeader(), nil, nil)
 	if err != nil {
 		return fmt.Errorf("couldn't PUT request shuffle playback; %s", err.Error())
 	}

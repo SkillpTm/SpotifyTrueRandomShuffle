@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/api"
+	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/auth"
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/player"
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/util"
 )
@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(fmt.Errorf("couldn't setup config; %s", err.Error()))
 	}
 
-	api.AuthUser()
+	auth.AuthUser()
 	err = player.Start()
 	if err != nil {
 		util.LogError(fmt.Errorf("couldn't continue main loop; %s", err.Error()))

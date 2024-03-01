@@ -1,5 +1,5 @@
-// Package api is responsible for handling everything to do with the authorization and token exchanges with Spotify
-package api
+// Package auth is responsible for handling everything to do with the authorization and token exchanges with Spotify
+package auth
 
 // <---------------------------------------------------------------------------------------------------->
 

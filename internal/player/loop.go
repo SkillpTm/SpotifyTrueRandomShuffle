@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/api"
+	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/auth"
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/util"
 )
 
@@ -44,7 +44,7 @@ func Start() error {
 		time.Sleep(time.Duration(int64(util.AppConfig.LoopRefreshTime * float64(time.Second))))
 
 		// get the playback state for tests and context
-		playbackResponse, err := util.MakeHTTPRequest("GET", baseURL+playbackStateExtension, api.UserToken.GetAccessTokenHeader(), nil, nil)
+		playbackResponse, err := util.MakeHTTPRequest("GET", baseURL+playbackStateExtension, auth.UserToken.GetAccessTokenHeader(), nil, nil)
 		if err != nil {
 			return fmt.Errorf("couldn't GET request playback state; %s", err.Error())
 		}
