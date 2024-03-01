@@ -159,7 +159,7 @@ func (player *Player) createShufflePlaylist() (string, string, error) {
 
 	bodyData := map[string]interface{}{
 		"name":        "TrueRandomShuffle",
-		"description": "DON'T ADD ANYTHING to this playlist. This playlist was automatically created by SpotifyTrueRandomShuffle. You may remove it from your library.",
+		"description": "DON'T CHANGE ANYTHING in this playlist. This playlist was automatically created by SpotifyTrueRandomShuffle. You may remove it from your library.",
 		"public":      false,
 	}
 
@@ -400,16 +400,21 @@ func (player *Player) removeFinishedTracks(currentTrackURI string) error {
 
 // fillShufflePlaylist fills the shuffle playlist up to the size of shufflePlaylistLength
 func (player *Player) fillShufflePlaylist() error {
-	// get the current tracks in the playlist
-	currentShuffleTracks, err := player.getShufflePlaylistTrackURIs()
-	if err != nil {
-		return fmt.Errorf("couldn't get current shuffle tracks; %s", err.Error())
-	}
+	// validate periodically that there is no missmatch between shufflePlaylistTrackURIs and the actualy tracks
+	// this can only happen if the user manually removes a track from the playlist
+	// on default settings this should happen about every ~2min
+	if rand.Intn(player.shufflePlaylistLength*4) == 0 {
+		// get the current tracks in the playlist
+		currentShuffleTracks, err := player.getShufflePlaylistTrackURIs()
+		if err != nil {
+			return fmt.Errorf("couldn't get current shuffle tracks; %s", err.Error())
+		}
 
-	// check if we have a miss match between our var and spotify
-	if len(currentShuffleTracks) != len(player.shufflePlaylistTrackURIs) {
-		// set our var to spotify's values
-		player.shufflePlaylistTrackURIs = currentShuffleTracks
+		// check if we have a miss match between our var and spotify
+		if len(currentShuffleTracks) != len(player.shufflePlaylistTrackURIs) {
+			// set our var to spotify's values
+			player.shufflePlaylistTrackURIs = currentShuffleTracks
+		}
 	}
 
 	// if our shuffle playlist is already full just return
@@ -474,7 +479,7 @@ func (player *Player) fillShufflePlaylist() error {
 	}
 
 	// finally add all the URIs to the shuffle playlist
-	_, err = util.MakeHTTPRequest("POST", player.shufflePlaylistHREF+"/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
+	_, err := util.MakeHTTPRequest("POST", player.shufflePlaylistHREF+"/tracks", api.UserToken.GetAccessTokenHeader(), nil, bodyData)
 	if err != nil {
 		return fmt.Errorf("couldn't POST request add in new items to temp playlist; %s", err.Error())
 	}
