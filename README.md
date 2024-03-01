@@ -8,7 +8,7 @@ TrueRandomShuffle is turned off during private sessions. It also doesn't effect 
 
 ### Customization:
 
-You may edited the following values in ./configs/config.json:
+You may edit the following values in ./configs/config.json:
 - loopRefreshTime: This changes how often the main loop repeats itself (setting this too low may cause rate limiting from Spotify, which will stop TrueRandomShuffle).
 - requestAuthEveryTime: This changes if you have to click "accept" in the browser for every restart.
 - shufflePlaylistSize: This changes how big the hidden playlist for TrueRandomShuffle will be. Making it too big may occur rate limiting and more delay between the loops. Making it too small may mean TrueRandomShuffle can't refill the hidden playlist fast enough, if you spam skip.
