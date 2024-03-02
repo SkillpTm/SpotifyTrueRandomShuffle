@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/auth"
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/player"
@@ -21,8 +22,24 @@ func main() {
 	}
 
 	auth.AuthUser()
-	err = player.Start()
-	if err != nil {
-		util.LogError(fmt.Errorf("couldn't continue main loop; %s", err.Error()))
+
+	for {
+		err = player.Start()
+		// we can't return nil, so we don't error check
+		util.LogError(fmt.Errorf("couldn't continue main loop; %s", err.Error()), false)
+
+		// check if Spotify terminated our connection
+		if strings.Contains(err.Error(), "connection reset by peer") {
+			// forcefully refresh our Token
+			forceErr := auth.UserToken.ForceRefreshToken()
+			if forceErr != nil {
+				util.LogError(forceErr, true)
+			}
+
+			continue
+		}
+
+		// if an unhandled error occured end the program
+		return
 	}
 }
