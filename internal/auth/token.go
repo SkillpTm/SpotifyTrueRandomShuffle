@@ -58,7 +58,7 @@ func (token *Token) refreshAccessToken() error {
 	}
 
 	token.accessToken = responseMap["access_token"].(string)
-	token.expirationTime = time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))) * time.Second)
+	token.expirationTime = time.Now().Add(time.Duration(int(responseMap["expires_in"].(float64))-60) * time.Second)
 
 	return nil
 }
