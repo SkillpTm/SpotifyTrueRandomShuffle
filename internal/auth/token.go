@@ -22,6 +22,11 @@ type Token struct {
 
 // <---------------------------------------------------------------------------------------------------->
 
+// GetAccessTokenHeader generates the auth header needed fro essentially all API calls with a token
+func (token *Token) GetAccessTokenHeader() map[string]string {
+	return map[string]string{"Authorization": "Bearer " + token.getAccessToken()}
+}
+
 // GetAccessToken is a getter for the access token that always ensures it's up to date
 func (token *Token) getAccessToken() string {
 	currentTime := time.Now()
@@ -30,15 +35,16 @@ func (token *Token) getAccessToken() string {
 	if token.expirationTime.Before(currentTime) {
 		err := token.refreshAccessToken()
 		if err != nil {
-			util.LogError(fmt.Errorf("couldn't refresh access token; %s", err.Error()))
+			util.LogError(fmt.Errorf("couldn't refresh access token; %s", err.Error()), true)
 		}
 	}
 
 	return token.accessToken
 }
 
-func (token *Token) GetAccessTokenHeader() map[string]string {
-	return map[string]string{"Authorization": "Bearer " + token.getAccessToken()}
+// ForceRefreshToken should only be used on rare errors to immeaditalty refresh our access Token, regradles of our expirationTime
+func (token *Token) ForceRefreshToken() error {
+	return token.refreshAccessToken()
 }
 
 // refreshAccessToken uses the refreshToken to exchange for a new accessToken

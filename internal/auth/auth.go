@@ -51,7 +51,7 @@ func startHTTPServer() {
 	go func() {
 		err := http.ListenAndServe(util.AppConfig.CallbackPort, nil)
 		if err != nil {
-			util.LogError(fmt.Errorf("couldn't listen and server http server; %s", err.Error()))
+			util.LogError(fmt.Errorf("couldn't listen and server http server; %s", err.Error()), true)
 		}
 	}()
 }
@@ -71,14 +71,14 @@ func handleAuthCode(w http.ResponseWriter, r *http.Request) {
 	// compare the states
 	if state != callbackState {
 		http.Error(w, "state mismatch", http.StatusForbidden)
-		util.LogError(fmt.Errorf("state mismatch: %s != %s", state, callbackState))
+		util.LogError(fmt.Errorf("state mismatch: %s != %s", state, callbackState), true)
 	}
 
 	// exchange the token
 	token, err := exchangeToken(query.Get("code"))
 	if err != nil {
 		http.Error(w, "couldn't get token", http.StatusForbidden)
-		util.LogError(fmt.Errorf("couldn't exchange for access token; %s", err.Error()))
+		util.LogError(fmt.Errorf("couldn't exchange for access token; %s", err.Error()), true)
 	}
 
 	fmt.Fprintf(w, "Login Completed!")

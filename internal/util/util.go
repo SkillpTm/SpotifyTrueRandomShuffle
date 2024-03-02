@@ -20,7 +20,7 @@ import (
 // <---------------------------------------------------------------------------------------------------->
 
 // LogError writes any error to a log file and then uses log.Fatal
-func LogError(logErr error) {
+func LogError(logErr error, exitFlag bool) {
 	// open log file
 	logFile, err := os.OpenFile(AppConfig.errorLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
@@ -31,8 +31,9 @@ func LogError(logErr error) {
 	// write to log file
 	fmt.Fprintf(logFile, "%v: %v\n", time.Now(), logErr)
 
-	// exit the program
-	log.Fatal(logErr)
+	if exitFlag {
+		log.Fatal(logErr)
+	}
 }
 
 // GenerateRandomString generates a random string of Base64 characters
@@ -43,7 +44,7 @@ func GenerateRandomString(length int) string {
 	// populate it with random bytes
 	_, err := rand.Read(bytes)
 	if err != nil {
-		LogError(fmt.Errorf("couldn't rand read bytes for random string; %s", err.Error()))
+		LogError(fmt.Errorf("couldn't rand read bytes for random string; %s", err.Error()), true)
 	}
 
 	return base64.StdEncoding.EncodeToString(bytes)
