@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(fmt.Errorf("couldn't setup config; %s", err.Error()))
 	}
 
-	auth.AuthUser()
+	auth.User()
 
 	for {
 		err = player.Start()

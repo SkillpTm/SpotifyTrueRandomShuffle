@@ -31,8 +31,8 @@ var (
 
 // <---------------------------------------------------------------------------------------------------->
 
-// AuthUser authorizes our access to the user by getting the access token from Spotify
-func AuthUser() {
+// User authorizes our access to the user by getting the access token from Spotify
+func User() {
 	startHTTPServer()
 	requestUserAuth()
 

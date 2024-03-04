@@ -42,7 +42,7 @@ func (token *Token) getAccessToken() string {
 	return token.accessToken
 }
 
-// ForceRefreshToken should only be used on rare errors to immeaditalty refresh our access Token, regradles of our expirationTime
+// ForceRefreshToken should only be used on rare errors to immediately refresh our access Token, regradles of our expirationTime
 func (token *Token) ForceRefreshToken() error {
 	return token.refreshAccessToken()
 }
