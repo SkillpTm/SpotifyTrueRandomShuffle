@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/auth"
 	"github.com/SkillpTm/SpotifyTrueRandomShuffle/internal/player"
@@ -30,6 +31,19 @@ func main() {
 
 		// check if Spotify terminated our connection
 		if strings.Contains(err.Error(), "connection reset by peer") {
+			// forcefully refresh our Token
+			forceErr := auth.UserToken.ForceRefreshToken()
+			if forceErr != nil {
+				util.LogError(forceErr, true)
+			}
+
+			continue
+		}
+
+		// check if Spotify had an error on their end
+		if strings.Contains(err.Error(), "an error 504") || strings.Contains(err.Error(), "an error 500") || strings.Contains(err.Error(), "an error 500") {
+			// wait for Spotify to be ready to respond to us again
+			time.Sleep(60 * time.Second)
 			// forcefully refresh our Token
 			forceErr := auth.UserToken.ForceRefreshToken()
 			if forceErr != nil {
