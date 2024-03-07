@@ -41,7 +41,7 @@ func main() {
 		}
 
 		// check if Spotify had an error on their end
-		if strings.Contains(err.Error(), "an error 504") || strings.Contains(err.Error(), "an error 500") || strings.Contains(err.Error(), "an error 500") {
+		if strings.Contains(err.Error(), "an error 504") || strings.Contains(err.Error(), "an error 502") || strings.Contains(err.Error(), "an error 500") {
 			// wait for Spotify to be ready to respond to us again
 			time.Sleep(60 * time.Second)
 			// forcefully refresh our Token
