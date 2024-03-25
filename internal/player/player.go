@@ -324,10 +324,6 @@ func (player *Player) setContext(playbackResponse *map[string]interface{}) error
 		player.shufflePlaylistLength = player.contextLength
 	}
 
-	if player.shufflePlaylistLength < 1 {
-		return fmt.Errorf("received an empty context")
-	}
-
 	return nil
 }
 
@@ -344,6 +340,10 @@ func (player *Player) getContextLength() (int, error) {
 		length = int(contextResponse["total_tracks"].(float64))
 	} else if player.contextType == "playlist" {
 		length = int(contextResponse["tracks"].(map[string]interface{})["total"].(float64))
+	}
+
+	if length < 1 {
+		return length, fmt.Errorf("received an empty context")
 	}
 
 	return length, nil
