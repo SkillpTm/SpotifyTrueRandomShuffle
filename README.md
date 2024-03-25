@@ -39,7 +39,7 @@ go mod download
 
 ### Compile TrueRandomShuffle:
 ```bash
-go build -o ./SpotifyTrueRandomShuffle.exe ./cmd/main/
+go build -o ./SpotifyTrueRandomShuffle.exe ./cmd/SpotifyTrueRandomShuffle/
 ```
 
 ### Launch TrueRandomShuffle:
